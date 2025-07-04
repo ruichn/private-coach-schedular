@@ -16,23 +16,23 @@ export default function CoachFilters() {
   const [showFilters, setShowFilters] = useState(false)
 
   const specialties = [
-    "Fitness",
-    "Business",
-    "Life Coaching",
-    "Sports",
-    "Mindfulness",
-    "Public Speaking",
-    "Leadership",
-    "Nutrition",
-    "Career Development",
-    "Team Building",
+    "Serving",
+    "Spiking",
+    "Setting",
+    "Blocking",
+    "Digging",
+    "Passing",
+    "Team Strategy",
+    "Conditioning",
+    "Fundamentals",
+    "Advanced Techniques",
   ]
 
   return (
     <div className="w-full">
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between mb-6">
         <div className="relative w-full sm:w-96">
-          <Input placeholder="Search coaches by name or specialty..." className="pl-10" />
+          <Input placeholder="Search by age group or training focus..." className="pl-10" />
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -89,7 +89,7 @@ export default function CoachFilters() {
                 </div>
 
                 <div className="space-y-3">
-                  <h3 className="font-medium">Group Size</h3>
+                  <h3 className="font-medium">Team Size</h3>
                   <div className="space-y-4">
                     <Slider
                       defaultValue={[groupSize]}
@@ -104,6 +104,22 @@ export default function CoachFilters() {
                       <span>Max: 20</span>
                     </div>
                   </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="font-medium">Age Group</h3>
+                  <Select defaultValue="All Ages">
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Ages" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="All Ages">All Ages</SelectItem>
+                      <SelectItem value="U13">U13</SelectItem>
+                      <SelectItem value="U14">U14</SelectItem>
+                      <SelectItem value="U15">U15</SelectItem>
+                      <SelectItem value="U16">U16</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-3">
@@ -159,15 +175,15 @@ export default function CoachFilters() {
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
                       <Checkbox id="in-person" />
-                      <Label htmlFor="in-person">In-person</Label>
+                      <Label htmlFor="in-person">Indoor Training</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Checkbox id="virtual" />
-                      <Label htmlFor="virtual">Virtual</Label>
+                      <Label htmlFor="virtual">Outdoor Training</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Checkbox id="hybrid" />
-                      <Label htmlFor="hybrid">Hybrid</Label>
+                      <Label htmlFor="hybrid">Tournament Prep</Label>
                     </div>
                   </div>
                 </div>

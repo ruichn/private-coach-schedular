@@ -40,20 +40,20 @@ export default function Home() {
       <main>
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">Find the Perfect Coach for Your Group</h1>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">Elite Volleyball Training with Coach Robe</h1>
             <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
-              Book expert coaches for your team, friends, or organization. Personalized sessions tailored to your
-              group's needs.
+              Professional volleyball coaching for youth players. Specialized group training sessions organized by age
+              groups U13-U16. Develop your skills, teamwork, and competitive edge.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/coaches">
                 <Button size="lg" className="w-full sm:w-auto">
-                  Browse Coaches
+                  Book Training Session
                 </Button>
               </Link>
               <Link href="/signup">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto bg-transparent">
-                  Become a Coach
+                  Learn About Programs
                 </Button>
               </Link>
             </div>
@@ -62,56 +62,56 @@ export default function Home() {
 
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold mb-10 text-center">Featured Coaches</h2>
+            <h2 className="text-3xl font-bold mb-10 text-center">Featured Age Groups</h2>
 
             <CoachFilters />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-              {featuredCoaches.map((coach) => (
-                <Card key={coach.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              {ageGroups.map((group) => (
+                <Card key={group.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="aspect-video relative overflow-hidden">
                     <img
-                      src={coach.image || "/placeholder.svg"}
-                      alt={coach.name}
+                      src={group.image || "/placeholder.svg"}
+                      alt={group.name}
                       className="object-cover w-full h-full"
                     />
                   </div>
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle>{coach.name}</CardTitle>
-                        <CardDescription>{coach.title}</CardDescription>
+                        <CardTitle>{group.name}</CardTitle>
+                        <CardDescription>{group.description}</CardDescription>
                       </div>
                       <div className="flex items-center">
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                        <span className="font-medium">{coach.rating}</span>
+                        <span className="font-medium">{group.rating}</span>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {coach.specialties.map((specialty) => (
-                        <Badge key={specialty} variant="secondary">
-                          {specialty}
+                      {group.subgroups.map((subgroup) => (
+                        <Badge key={subgroup} variant="secondary">
+                          {subgroup}
                         </Badge>
                       ))}
                     </div>
                     <div className="flex items-center text-sm text-gray-500 mb-2">
                       <Users className="h-4 w-4 mr-2" />
                       <span>
-                        Group size: {coach.minGroupSize}-{coach.maxGroupSize} people
+                        Session Capacity: {group.minCapacity}-{group.maxCapacity} players
                       </span>
                     </div>
                     <div className="flex items-center text-sm text-gray-500">
                       <Calendar className="h-4 w-4 mr-2" />
-                      <span>Session length: {coach.sessionLength} minutes</span>
+                      <span>Session length: {group.sessionLength} minutes</span>
                     </div>
                   </CardContent>
                   <CardFooter className="flex justify-between items-center">
-                    <div className="font-bold">${coach.hourlyRate}/hour</div>
-                    <Link href={`/coaches/${coach.id}`}>
+                    <div className="font-bold">${group.sessionPrice}</div>
+                    <Link href={`/coaches/${group.id}`}>
                       <Button>
-                        View Profile
+                        View Details
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </Link>
@@ -123,7 +123,7 @@ export default function Home() {
             <div className="text-center mt-12">
               <Link href="/coaches">
                 <Button variant="outline" size="lg">
-                  View All Coaches
+                  View All Programs
                 </Button>
               </Link>
             </div>
@@ -138,27 +138,28 @@ export default function Home() {
                 <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-primary font-bold text-xl">1</span>
                 </div>
-                <h3 className="text-xl font-bold mb-2">Find Your Coach</h3>
+                <h3 className="text-xl font-bold mb-2">Choose Your Age Group</h3>
                 <p className="text-gray-600">
-                  Browse our selection of expert coaches and find the perfect match for your group's needs.
+                  Select the appropriate age group (U13, U14, U15, or U16) and available subgroup for your training
+                  level.
                 </p>
               </div>
               <div className="text-center">
                 <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-primary font-bold text-xl">2</span>
                 </div>
-                <h3 className="text-xl font-bold mb-2">Book a Session</h3>
+                <h3 className="text-xl font-bold mb-2">Book Your Session</h3>
                 <p className="text-gray-600">
-                  Select your preferred date and time, specify your group size, and book your session.
+                  Schedule your group training session at our preferred times and confirm your spot.
                 </p>
               </div>
               <div className="text-center">
                 <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-primary font-bold text-xl">3</span>
                 </div>
-                <h3 className="text-xl font-bold mb-2">Enjoy Your Session</h3>
+                <h3 className="text-xl font-bold mb-2">Train & Improve</h3>
                 <p className="text-gray-600">
-                  Meet with your coach and group, either in-person or virtually, and achieve your goals together.
+                  Join Coach Robe for intensive volleyball training focused on skills development and team play.
                 </p>
               </div>
             </div>
@@ -169,10 +170,10 @@ export default function Home() {
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
             <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-              Join thousands of groups who have found their perfect coach through our platform.
+              Join our volleyball programs and elevate your game with expert coaching.
             </p>
             <Link href="/coaches">
-              <Button size="lg">Find Your Coach Today</Button>
+              <Button size="lg">Find Your Training Today</Button>
             </Link>
           </div>
         </section>
@@ -276,77 +277,53 @@ export default function Home() {
   )
 }
 
-const featuredCoaches = [
+const ageGroups = [
   {
     id: 1,
-    name: "Sarah Johnson",
-    title: "Fitness & Wellness Coach",
+    name: "U13 Volleyball Training",
+    description: "Beginner level training for players under 13 years old.",
     image: "/placeholder.svg?height=300&width=500",
-    rating: 4.9,
-    specialties: ["HIIT", "Yoga", "Nutrition"],
-    minGroupSize: 4,
-    maxGroupSize: 12,
-    sessionLength: 60,
-    hourlyRate: 85,
+    rating: 4.5,
+    subgroups: ["Beginner", "Intermediate"],
+    minCapacity: 6,
+    maxCapacity: 12,
+    sessionLength: 90,
+    sessionPrice: 50,
   },
   {
     id: 2,
-    name: "Michael Chen",
-    title: "Business Strategy Coach",
+    name: "U14 Volleyball Training",
+    description: "Intermediate level training for players under 14 years old.",
     image: "/placeholder.svg?height=300&width=500",
-    rating: 4.8,
-    specialties: ["Leadership", "Team Building", "Strategic Planning"],
-    minGroupSize: 3,
-    maxGroupSize: 10,
+    rating: 4.6,
+    subgroups: ["Intermediate", "Advanced"],
+    minCapacity: 6,
+    maxCapacity: 12,
     sessionLength: 90,
-    hourlyRate: 120,
+    sessionPrice: 60,
   },
   {
     id: 3,
-    name: "Elena Rodriguez",
-    title: "Life & Career Coach",
+    name: "U15 Volleyball Training",
+    description: "Advanced level training for players under 15 years old.",
     image: "/placeholder.svg?height=300&width=500",
     rating: 4.7,
-    specialties: ["Career Transition", "Work-Life Balance", "Goal Setting"],
-    minGroupSize: 2,
-    maxGroupSize: 8,
-    sessionLength: 75,
-    hourlyRate: 95,
+    subgroups: ["Advanced", "Elite"],
+    minCapacity: 6,
+    maxCapacity: 12,
+    sessionLength: 120,
+    sessionPrice: 70,
   },
   {
     id: 4,
-    name: "David Thompson",
-    title: "Sports Performance Coach",
-    image: "/placeholder.svg?height=300&width=500",
-    rating: 4.9,
-    specialties: ["Basketball", "Strength Training", "Agility"],
-    minGroupSize: 5,
-    maxGroupSize: 15,
-    sessionLength: 90,
-    hourlyRate: 110,
-  },
-  {
-    id: 5,
-    name: "Aisha Patel",
-    title: "Mindfulness & Meditation Coach",
+    name: "U16 Volleyball Training",
+    description: "Elite level training for players under 16 years old.",
     image: "/placeholder.svg?height=300&width=500",
     rating: 4.8,
-    specialties: ["Stress Reduction", "Meditation", "Breathwork"],
-    minGroupSize: 3,
-    maxGroupSize: 12,
-    sessionLength: 60,
-    hourlyRate: 75,
-  },
-  {
-    id: 6,
-    name: "James Wilson",
-    title: "Public Speaking Coach",
-    image: "/placeholder.svg?height=300&width=500",
-    rating: 4.9,
-    specialties: ["Presentation Skills", "Confidence Building", "Storytelling"],
-    minGroupSize: 2,
-    maxGroupSize: 8,
+    subgroups: ["Elite"],
+    minCapacity: 6,
+    maxCapacity: 12,
     sessionLength: 120,
-    hourlyRate: 150,
+    sessionPrice: 80,
   },
 ]

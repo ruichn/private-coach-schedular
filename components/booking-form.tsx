@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
@@ -16,21 +16,22 @@ import { cn } from "@/lib/utils"
 
 interface BookingFormProps {
   coachId: number
-  hourlyRate: number
+  hourlyRate: number // Now represents the per-player rate
 }
 
 export default function BookingForm({ coachId, hourlyRate }: BookingFormProps) {
   const [date, setDate] = useState<Date>()
   const [time, setTime] = useState<string>()
-  const [duration, setDuration] = useState<string>("60")
-  const [groupSize, setGroupSize] = useState<string>("5")
-  const [sessionType, setSessionType] = useState<string>("in-person")
+  const [duration, setDuration] = useState<string>("90") // Default to 90 minutes
+  const [numberOfPlayers, setNumberOfPlayers] = useState<string>("5")
+  const [sessionType, setSessionType] = useState<string>("regular")
+  const [ageGroup, setAgeGroup] = useState<string>("")
+  const [subgroup, setSubgroup] = useState<string>("")
 
   const availableTimes = ["9:00 AM", "10:00 AM", "11:00 AM", "1:00 PM", "2:00 PM", "4:00 PM", "5:00 PM", "6:00 PM"]
 
   const calculateTotal = () => {
-    const durationHours = Number.parseInt(duration) / 60
-    return hourlyRate * durationHours
+    return hourlyRate * Number.parseInt(numberOfPlayers) // per-player pricing
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -41,20 +42,71 @@ export default function BookingForm({ coachId, hourlyRate }: BookingFormProps) {
       date,
       time,
       duration,
-      groupSize,
+      numberOfPlayers,
       sessionType,
+      ageGroup,
+      subgroup,
     })
     alert("Booking request submitted! In a real app, this would process the booking.")
   }
 
+  const subgroups = {
+    U13: ["Beginner", "Intermediate", "Advanced"],
+    U14: ["Beginner", "Intermediate", "Advanced"],
+    U15: ["Developmental", "Competitive"],
+    U16: ["Developmental", "Competitive"],
+  }
+
+  useEffect(() => {
+    setSubgroup("") // Reset subgroup when ageGroup changes
+    if (ageGroup === "U13" || ageGroup === "U14") {
+      setDuration("90")
+    } else if (ageGroup === "U15" || ageGroup === "U16") {
+      setDuration("120")
+    }
+  }, [ageGroup])
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Book a Group Session</CardTitle>
+        <CardTitle>Book Training Session</CardTitle>
         <CardDescription>Select your preferred date, time, and group details</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="age-group">Age Group</Label>
+            <Select value={ageGroup} onValueChange={setAgeGroup}>
+              <SelectTrigger id="age-group">
+                <SelectValue placeholder="Select age group" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="U13">U13</SelectItem>
+                <SelectItem value="U14">U14</SelectItem>
+                <SelectItem value="U15">U15</SelectItem>
+                <SelectItem value="U16">U16</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {ageGroup && (
+            <div className="space-y-2">
+              <Label htmlFor="subgroup">Subgroup</Label>
+              <Select value={subgroup} onValueChange={setSubgroup}>
+                <SelectTrigger id="subgroup">
+                  <SelectValue placeholder="Select subgroup" />
+                </SelectTrigger>
+                <SelectContent>
+                  {subgroups[ageGroup as keyof typeof subgroups]?.map((group) => (
+                    <SelectItem key={group} value={group}>
+                      {group}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="date">Date</Label>
             <Popover>
@@ -111,15 +163,16 @@ export default function BookingForm({ coachId, hourlyRate }: BookingFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="duration">Session Duration</Label>
-            <Select value={duration} onValueChange={setDuration}>
+            <Select value={duration} onValueChange={setDuration} disabled={ageGroup === ""}>
               <SelectTrigger id="duration">
                 <SelectValue placeholder="Select duration" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="30">30 minutes</SelectItem>
-                <SelectItem value="60">60 minutes</SelectItem>
-                <SelectItem value="90">90 minutes</SelectItem>
-                <SelectItem value="120">120 minutes</SelectItem>
+                {ageGroup === "U13" || ageGroup === "U14" ? (
+                  <SelectItem value="90">90 minutes</SelectItem>
+                ) : (
+                  <SelectItem value="120">120 minutes</SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -127,7 +180,7 @@ export default function BookingForm({ coachId, hourlyRate }: BookingFormProps) {
           <div className="space-y-2">
             <Label htmlFor="group-size" className="flex items-center">
               <Users className="mr-2 h-4 w-4" />
-              Group Size
+              Number of Players
             </Label>
             <div className="flex items-center">
               <Input
@@ -135,11 +188,11 @@ export default function BookingForm({ coachId, hourlyRate }: BookingFormProps) {
                 type="number"
                 min="2"
                 max="20"
-                value={groupSize}
-                onChange={(e) => setGroupSize(e.target.value)}
+                value={numberOfPlayers}
+                onChange={(e) => setNumberOfPlayers(e.target.value)}
                 className="w-20 mr-3"
               />
-              <span className="text-sm text-gray-500">people</span>
+              <span className="text-sm text-gray-500">players</span>
             </div>
           </div>
 
@@ -147,15 +200,21 @@ export default function BookingForm({ coachId, hourlyRate }: BookingFormProps) {
             <Label>Session Type</Label>
             <RadioGroup value={sessionType} onValueChange={setSessionType} className="flex flex-col space-y-1">
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="in-person" id="in-person" />
-                <Label htmlFor="in-person" className="cursor-pointer">
-                  In-person
+                <RadioGroupItem value="regular" id="regular" />
+                <Label htmlFor="regular" className="cursor-pointer">
+                  Regular Training
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="virtual" id="virtual" />
-                <Label htmlFor="virtual" className="cursor-pointer">
-                  Virtual
+                <RadioGroupItem value="tournament" id="tournament" />
+                <Label htmlFor="tournament" className="cursor-pointer">
+                  Tournament Prep
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="skills" id="skills" />
+                <Label htmlFor="skills" className="cursor-pointer">
+                  Skills Intensive
                 </Label>
               </div>
             </RadioGroup>
@@ -182,7 +241,7 @@ export default function BookingForm({ coachId, hourlyRate }: BookingFormProps) {
           type="submit"
           className="w-full"
           size="lg"
-          disabled={!date || !time || !duration || !groupSize}
+          disabled={!date || !time || !duration || !numberOfPlayers || !ageGroup || !subgroup}
           onClick={handleSubmit}
         >
           Book Now

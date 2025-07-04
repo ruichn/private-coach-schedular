@@ -5,78 +5,62 @@ import { Badge } from "@/components/ui/badge"
 import { Star, Users, Calendar, ArrowRight } from "lucide-react"
 import CoachFilters from "@/components/coach-filters"
 
-const coaches = [
+const ageGroups = [
   {
     id: 1,
-    name: "Sarah Johnson",
-    title: "Fitness & Wellness Coach",
+    name: "U13 Development",
+    title: "Ages 12-13 • Fundamentals Focus",
     image: "/placeholder.svg?height=300&width=500",
     rating: 4.9,
-    specialties: ["HIIT", "Yoga", "Nutrition"],
-    minGroupSize: 4,
+    specialties: ["Basic Skills", "Fundamentals", "Team Play"],
+    minGroupSize: 6,
     maxGroupSize: 12,
-    sessionLength: 60,
-    hourlyRate: 85,
+    sessionLength: 90,
+    hourlyRate: 25,
+    subgroups: ["Beginners", "Intermediate"],
+    description: "Foundation building for young players",
   },
   {
     id: 2,
-    name: "Michael Chen",
-    title: "Business Strategy Coach",
+    name: "U14 Skills",
+    title: "Ages 13-14 • Skill Development",
     image: "/placeholder.svg?height=300&width=500",
     rating: 4.8,
-    specialties: ["Leadership", "Team Building", "Strategic Planning"],
-    minGroupSize: 3,
-    maxGroupSize: 10,
+    specialties: ["Serving", "Passing", "Setting"],
+    minGroupSize: 6,
+    maxGroupSize: 12,
     sessionLength: 90,
-    hourlyRate: 120,
+    hourlyRate: 30,
+    subgroups: ["Group A", "Group B", "Advanced"],
+    description: "Advanced skill development and technique refinement",
   },
   {
     id: 3,
-    name: "Elena Rodriguez",
-    title: "Life & Career Coach",
+    name: "U15 Competitive",
+    title: "Ages 14-15 • Competition Ready",
     image: "/placeholder.svg?height=300&width=500",
-    rating: 4.7,
-    specialties: ["Career Transition", "Work-Life Balance", "Goal Setting"],
-    minGroupSize: 2,
-    maxGroupSize: 8,
-    sessionLength: 75,
-    hourlyRate: 95,
+    rating: 4.9,
+    specialties: ["Spiking", "Blocking", "Strategy"],
+    minGroupSize: 8,
+    maxGroupSize: 14,
+    sessionLength: 120,
+    hourlyRate: 35,
+    subgroups: ["Elite", "Development", "Tournament Prep"],
+    description: "Competitive training for tournament preparation",
   },
   {
     id: 4,
-    name: "David Thompson",
-    title: "Sports Performance Coach",
+    name: "U16 Elite",
+    title: "Ages 15-16 • Elite Training",
     image: "/placeholder.svg?height=300&width=500",
-    rating: 4.9,
-    specialties: ["Basketball", "Strength Training", "Agility"],
-    minGroupSize: 5,
-    maxGroupSize: 15,
-    sessionLength: 90,
-    hourlyRate: 110,
-  },
-  {
-    id: 5,
-    name: "Aisha Patel",
-    title: "Mindfulness & Meditation Coach",
-    image: "/placeholder.svg?height=300&width=500",
-    rating: 4.8,
-    specialties: ["Stress Reduction", "Meditation", "Breathwork"],
-    minGroupSize: 3,
+    rating: 5.0,
+    specialties: ["Advanced Techniques", "Leadership", "Mental Game"],
+    minGroupSize: 8,
     maxGroupSize: 12,
-    sessionLength: 60,
-    hourlyRate: 75,
-  },
-  {
-    id: 6,
-    name: "James Wilson",
-    title: "Public Speaking Coach",
-    image: "/placeholder.svg?height=300&width=500",
-    rating: 4.9,
-    specialties: ["Presentation Skills", "Confidence Building", "Storytelling"],
-    minGroupSize: 2,
-    maxGroupSize: 8,
     sessionLength: 120,
-    hourlyRate: 150,
+    hourlyRate: 40,
+    subgroups: ["Premier", "Select"],
+    description: "Elite level training for serious competitive players",
   },
 ]
 
@@ -114,14 +98,14 @@ export default function CoachesPage() {
 
       <main className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Find Your Coach</h1>
-          <p className="text-gray-500">Showing {coaches.length} coaches</p>
+          <h1 className="text-3xl font-bold">Training Programs</h1>
+          <p className="text-gray-500">Showing {ageGroups.length} programs</p>
         </div>
 
         <CoachFilters />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-          {coaches.map((coach) => (
+          {ageGroups.map((coach) => (
             <Card key={coach.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <div className="aspect-video relative overflow-hidden">
                 <img src={coach.image || "/placeholder.svg"} alt={coach.name} className="object-cover w-full h-full" />
@@ -154,6 +138,9 @@ export default function CoachesPage() {
                   <span>
                     Group size: {coach.minGroupSize}-{coach.maxGroupSize} people
                   </span>
+                </div>
+                <div className="flex items-center text-sm text-gray-500 mb-2">
+                  <span>Subgroups: {coach.subgroups?.join(", ")}</span>
                 </div>
                 <div className="flex items-center text-sm text-gray-500">
                   <Calendar className="h-4 w-4 mr-2" />

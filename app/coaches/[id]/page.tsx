@@ -10,41 +10,41 @@ export default function CoachProfile({ params }: { params: { id: string } }) {
   // In a real app, you would fetch the coach data based on the ID
   const coach = {
     id: Number.parseInt(params.id),
-    name: "Sarah Johnson",
-    title: "Fitness & Wellness Coach",
+    name: "Coach Robe",
+    title: "Professional Volleyball Coach",
     image: "/placeholder.svg?height=400&width=400",
     rating: 4.9,
     reviewCount: 127,
-    specialties: ["HIIT", "Yoga", "Nutrition", "Strength Training", "Wellness"],
+    specialties: ["Youth Development", "Skill Progression", "Team Building", "Competition Prep", "Mental Training"],
     minGroupSize: 4,
     maxGroupSize: 12,
     sessionLength: 60,
     hourlyRate: 85,
     location: "New York, NY",
-    virtualAvailable: true,
-    bio: "With over 10 years of experience in fitness and wellness coaching, I specialize in helping groups achieve their health goals through customized training programs. My approach combines high-intensity workouts, mindful movement, and nutritional guidance to create a holistic fitness experience.",
+    virtualAvailable: false,
+    bio: "With over 15 years of experience coaching youth volleyball, Coach Robe has developed hundreds of players from beginner to elite levels. Specializing in age-appropriate training methods, he focuses on building strong fundamentals while developing each player's unique strengths. His programs have produced numerous scholarship athletes and championship teams.",
     experience: [
       {
-        title: "Senior Fitness Coach",
-        company: "Elite Fitness Center",
-        period: "2018 - Present",
+        title: "Head Volleyball Coach",
+        company: "Elite Volleyball Academy",
+        period: "2015 - Present",
       },
       {
-        title: "Wellness Consultant",
-        company: "Corporate Wellness Inc.",
-        period: "2015 - 2018",
-      },
-      {
-        title: "Personal Trainer",
-        company: "City Gym",
+        title: "Assistant Volleyball Coach",
+        company: "Premier Volleyball Club",
         period: "2012 - 2015",
+      },
+      {
+        title: "Volleyball Camp Instructor",
+        company: "Summer Sports Camps",
+        period: "2010 - 2012",
       },
     ],
     certifications: [
-      "Certified Personal Trainer (NASM)",
-      "Yoga Alliance RYT-200",
-      "Precision Nutrition Level 2",
-      "Functional Movement Specialist",
+      "USA Volleyball Certified Coach",
+      "Youth Sports Safety Certified",
+      "First Aid/CPR Certified",
+      "Positive Coaching Alliance Certified",
     ],
     reviews: [
       {
@@ -52,8 +52,7 @@ export default function CoachProfile({ params }: { params: { id: string } }) {
         name: "Jennifer L.",
         rating: 5,
         date: "June 15, 2023",
-        comment:
-          "Sarah led our team building fitness session and it was amazing! She tailored the workout to accommodate different fitness levels and made everyone feel included. Highly recommend for corporate groups!",
+        comment: "Coach Robe is an amazing volleyball coach! My daughter has improved so much under his guidance.",
       },
       {
         id: 2,
@@ -61,7 +60,7 @@ export default function CoachProfile({ params }: { params: { id: string } }) {
         rating: 5,
         date: "May 3, 2023",
         comment:
-          "Our running club hired Sarah for a 6-week training program. Her expertise and enthusiasm pushed us to new levels. She's great at managing group dynamics while still providing individual attention.",
+          "Our volleyball team hired Coach Robe for a 6-week training program. His expertise and enthusiasm pushed us to new levels.",
       },
       {
         id: 3,
@@ -69,18 +68,40 @@ export default function CoachProfile({ params }: { params: { id: string } }) {
         rating: 4,
         date: "April 22, 2023",
         comment:
-          "Sarah led a wonderful yoga retreat for our group of friends. She created a perfect balance of challenging poses and relaxation techniques. The nutrition tips were an added bonus!",
+          "Coach Robe led a wonderful volleyball clinic for our group of friends. He created a perfect balance of challenging drills and fun games.",
       },
     ],
     availability: {
-      monday: ["9:00 AM - 12:00 PM", "4:00 PM - 8:00 PM"],
-      tuesday: ["10:00 AM - 2:00 PM", "5:00 PM - 7:00 PM"],
-      wednesday: ["9:00 AM - 12:00 PM", "4:00 PM - 8:00 PM"],
-      thursday: ["10:00 AM - 2:00 PM", "5:00 PM - 7:00 PM"],
-      friday: ["9:00 AM - 3:00 PM"],
-      saturday: ["10:00 AM - 2:00 PM"],
-      sunday: [],
+      monday: ["6:00 PM - 8:00 PM"],
+      tuesday: ["6:00 PM - 8:00 PM"],
+      wednesday: ["6:00 PM - 8:00 PM"],
+      thursday: ["6:00 PM - 8:00 PM"],
+      friday: [],
+      saturday: ["9:00 AM - 12:00 PM"],
+      sunday: ["1:00 PM - 4:00 PM"],
     },
+  }
+
+  const ageGroup = {
+    "10U": {
+      name: "10 and Under",
+      description: "Introduction to volleyball fundamentals for players aged 10 and under.",
+      focus: ["Basic skills", "Fun games", "Teamwork"],
+    },
+    "12U": {
+      name: "12 and Under",
+      description: "Intermediate volleyball training for players aged 11-12.",
+      focus: ["Skill development", "Game strategy", "Competition"],
+    },
+    "14U": {
+      name: "14 and Under",
+      description: "Advanced volleyball training for players aged 13-14.",
+      focus: ["Advanced techniques", "Position specialization", "Tournament preparation"],
+    },
+  }[params.id] || {
+    name: "Age Group Not Found",
+    description: "No information available for this age group.",
+    focus: [],
   }
 
   return (
@@ -203,6 +224,9 @@ export default function CoachProfile({ params }: { params: { id: string } }) {
                 <TabsTrigger value="availability" className="flex-1 rounded-none py-3">
                   Availability
                 </TabsTrigger>
+                <TabsTrigger value="ageGroup" className="flex-1 rounded-none py-3">
+                  {ageGroup.name}
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="about" className="p-6">
@@ -306,6 +330,17 @@ export default function CoachProfile({ params }: { params: { id: string } }) {
                 <p className="mt-4 text-sm text-gray-500">
                   * Times shown are in your local timezone. Availability may change based on bookings.
                 </p>
+              </TabsContent>
+              <TabsContent value="ageGroup" className="p-6">
+                <h2 className="text-xl font-bold mb-4">{ageGroup.name}</h2>
+                <p className="mb-6">{ageGroup.description}</p>
+
+                <h3 className="text-lg font-bold mb-3">Focus Areas</h3>
+                <ul className="list-disc pl-5 mb-6 space-y-1">
+                  {ageGroup.focus.map((focus, index) => (
+                    <li key={index}>{focus}</li>
+                  ))}
+                </ul>
               </TabsContent>
             </Tabs>
           </div>
