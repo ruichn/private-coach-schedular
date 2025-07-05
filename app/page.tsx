@@ -2,8 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Star, Users, Calendar, ArrowRight } from "lucide-react"
-import CoachFilters from "@/components/coach-filters"
+import { Users, Calendar, ArrowRight, MapPin, Clock } from "lucide-react"
 
 export default function Home() {
   return (
@@ -11,27 +10,27 @@ export default function Home() {
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="font-bold text-xl">
-            CoachConnect
+            Coach Robe Volleyball
           </Link>
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="/coaches" className="text-sm font-medium hover:text-gray-600">
-              Find Coaches
+            <Link href="/sessions" className="text-sm font-medium hover:text-gray-600">
+              Sessions
             </Link>
-            <Link href="/how-it-works" className="text-sm font-medium hover:text-gray-600">
-              How It Works
+            <Link href="/coaches" className="text-sm font-medium hover:text-gray-600">
+              Programs
             </Link>
             <Link href="/about" className="text-sm font-medium hover:text-gray-600">
-              About Us
+              About
             </Link>
           </nav>
           <div className="flex items-center gap-4">
-            <Link href="/login">
+            <Link href="/admin">
               <Button variant="outline" size="sm">
-                Log in
+                Coach Login
               </Button>
             </Link>
-            <Link href="/signup">
-              <Button size="sm">Sign up</Button>
+            <Link href="/sessions">
+              <Button size="sm">View Sessions</Button>
             </Link>
           </div>
         </div>
@@ -46,14 +45,14 @@ export default function Home() {
               groups U13-U16. Develop your skills, teamwork, and competitive edge.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/coaches">
+              <Link href="/sessions">
                 <Button size="lg" className="w-full sm:w-auto">
-                  Book Training Session
+                  View Training Sessions
                 </Button>
               </Link>
-              <Link href="/signup">
+              <Link href="/about">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto bg-transparent">
-                  Learn About Programs
+                  Learn About Coach Robe
                 </Button>
               </Link>
             </div>
@@ -62,56 +61,49 @@ export default function Home() {
 
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold mb-10 text-center">Featured Age Groups</h2>
-
-            <CoachFilters />
+            <h2 className="text-3xl font-bold mb-10 text-center">Upcoming Sessions</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-              {ageGroups.map((group) => (
-                <Card key={group.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="aspect-video relative overflow-hidden">
-                    <img
-                      src={group.image || "/placeholder.svg"}
-                      alt={group.name}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-                  <CardHeader>
+              {upcomingSessions.map((session) => (
+                <Card key={session.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle>{group.name}</CardTitle>
-                        <CardDescription>{group.description}</CardDescription>
+                        <CardTitle className="text-lg">
+                          {session.ageGroup} - {session.subgroup}
+                        </CardTitle>
+                        <CardDescription>{session.focus}</CardDescription>
                       </div>
-                      <div className="flex items-center">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                        <span className="font-medium">{group.rating}</span>
-                      </div>
+                      <Badge className="bg-green-100 text-green-800">{session.spotsLeft} spots left</Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {group.subgroups.map((subgroup) => (
-                        <Badge key={subgroup} variant="secondary">
-                          {subgroup}
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="flex items-center text-sm text-gray-500 mb-2">
-                      <Users className="h-4 w-4 mr-2" />
-                      <span>
-                        Session Capacity: {group.minCapacity}-{group.maxCapacity} players
-                      </span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      <span>Session length: {group.sessionLength} minutes</span>
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center text-sm">
+                        <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                        <span>{session.date}</span>
+                      </div>
+                      <div className="flex items-center text-sm">
+                        <Clock className="h-4 w-4 mr-2 text-gray-500" />
+                        <span>{session.time}</span>
+                      </div>
+                      <div className="flex items-center text-sm">
+                        <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                        <span>{session.location}</span>
+                      </div>
+                      <div className="flex items-center text-sm">
+                        <Users className="h-4 w-4 mr-2 text-gray-500" />
+                        <span>
+                          {session.participants}/{session.maxParticipants} players
+                        </span>
+                      </div>
                     </div>
                   </CardContent>
                   <CardFooter className="flex justify-between items-center">
-                    <div className="font-bold">${group.sessionPrice}</div>
-                    <Link href={`/coaches/${group.id}`}>
+                    <div className="font-bold">${session.price}</div>
+                    <Link href={`/sessions/${session.id}/signup`}>
                       <Button>
-                        View Details
+                        Sign Up
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </Link>
@@ -121,9 +113,9 @@ export default function Home() {
             </div>
 
             <div className="text-center mt-12">
-              <Link href="/coaches">
+              <Link href="/sessions">
                 <Button variant="outline" size="lg">
-                  View All Programs
+                  View All Sessions
                 </Button>
               </Link>
             </div>
@@ -138,19 +130,19 @@ export default function Home() {
                 <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-primary font-bold text-xl">1</span>
                 </div>
-                <h3 className="text-xl font-bold mb-2">Choose Your Age Group</h3>
+                <h3 className="text-xl font-bold mb-2">Browse Sessions</h3>
                 <p className="text-gray-600">
-                  Select the appropriate age group (U13, U14, U15, or U16) and available subgroup for your training
-                  level.
+                  View available training sessions organized by age group and skill level. Each session shows time,
+                  location, and available spots.
                 </p>
               </div>
               <div className="text-center">
                 <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-primary font-bold text-xl">2</span>
                 </div>
-                <h3 className="text-xl font-bold mb-2">Book Your Session</h3>
+                <h3 className="text-xl font-bold mb-2">Sign Up Online</h3>
                 <p className="text-gray-600">
-                  Schedule your group training session at our preferred times and confirm your spot.
+                  Complete the registration form with player and parent information. Secure your spot in the session.
                 </p>
               </div>
               <div className="text-center">
@@ -159,7 +151,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-bold mb-2">Train & Improve</h3>
                 <p className="text-gray-600">
-                  Join Coach Robe for intensive volleyball training focused on skills development and team play.
+                  Attend the session at the specified location and time. Payment is collected on-site.
                 </p>
               </div>
             </div>
@@ -170,9 +162,9 @@ export default function Home() {
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
             <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-              Join our volleyball programs and elevate your game with expert coaching.
+              Join our volleyball programs and elevate your game with expert coaching from Coach Robe.
             </p>
-            <Link href="/coaches">
+            <Link href="/sessions">
               <Button size="lg">Find Your Training Today</Button>
             </Link>
           </div>
@@ -183,25 +175,25 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="font-bold text-lg mb-4">CoachConnect</h3>
-              <p className="text-gray-400">Connecting groups with expert coaches for transformative experiences.</p>
+              <h3 className="font-bold text-lg mb-4">Coach Robe Volleyball</h3>
+              <p className="text-gray-400">Professional volleyball training for youth athletes in the New York area.</p>
             </div>
             <div>
               <h4 className="font-bold mb-4">Quick Links</h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/coaches" className="text-gray-400 hover:text-white">
-                    Find Coaches
+                  <Link href="/sessions" className="text-gray-400 hover:text-white">
+                    Training Sessions
                   </Link>
                 </li>
                 <li>
-                  <Link href="/how-it-works" className="text-gray-400 hover:text-white">
-                    How It Works
+                  <Link href="/coaches" className="text-gray-400 hover:text-white">
+                    Programs
                   </Link>
                 </li>
                 <li>
                   <Link href="/about" className="text-gray-400 hover:text-white">
-                    About Us
+                    About Coach Robe
                   </Link>
                 </li>
                 <li>
@@ -212,26 +204,26 @@ export default function Home() {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-4">Resources</h4>
+              <h4 className="font-bold mb-4">Age Groups</h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/blog" className="text-gray-400 hover:text-white">
-                    Blog
+                  <Link href="/sessions?age=U13" className="text-gray-400 hover:text-white">
+                    U13 Training
                   </Link>
                 </li>
                 <li>
-                  <Link href="/faq" className="text-gray-400 hover:text-white">
-                    FAQ
+                  <Link href="/sessions?age=U14" className="text-gray-400 hover:text-white">
+                    U14 Training
                   </Link>
                 </li>
                 <li>
-                  <Link href="/terms" className="text-gray-400 hover:text-white">
-                    Terms of Service
+                  <Link href="/sessions?age=U15" className="text-gray-400 hover:text-white">
+                    U15 Training
                   </Link>
                 </li>
                 <li>
-                  <Link href="/privacy" className="text-gray-400 hover:text-white">
-                    Privacy Policy
+                  <Link href="/sessions?age=U16" className="text-gray-400 hover:text-white">
+                    U16 Training
                   </Link>
                 </li>
               </ul>
@@ -259,17 +251,11 @@ export default function Home() {
                     />
                   </svg>
                 </Link>
-                <Link href="#" className="text-gray-400 hover:text-white">
-                  <span className="sr-only">Twitter</span>
-                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                  </svg>
-                </Link>
               </div>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; {new Date().getFullYear()} CoachConnect. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Coach Robe Volleyball. All rights reserved.</p>
           </div>
         </div>
       </footer>
@@ -277,53 +263,44 @@ export default function Home() {
   )
 }
 
-const ageGroups = [
+const upcomingSessions = [
   {
     id: 1,
-    name: "U13 Volleyball Training",
-    description: "Beginner level training for players under 13 years old.",
-    image: "/placeholder.svg?height=300&width=500",
-    rating: 4.5,
-    subgroups: ["Beginner", "Intermediate"],
-    minCapacity: 6,
-    maxCapacity: 12,
-    sessionLength: 90,
-    sessionPrice: 50,
-  },
-  {
-    id: 2,
-    name: "U14 Volleyball Training",
-    description: "Intermediate level training for players under 14 years old.",
-    image: "/placeholder.svg?height=300&width=500",
-    rating: 4.6,
-    subgroups: ["Intermediate", "Advanced"],
-    minCapacity: 6,
-    maxCapacity: 12,
-    sessionLength: 90,
-    sessionPrice: 60,
+    ageGroup: "U13",
+    subgroup: "Beginners",
+    date: "Monday, Jan 15",
+    time: "4:00 PM - 5:30 PM",
+    location: "Central High School Gym",
+    participants: 8,
+    maxParticipants: 12,
+    spotsLeft: 4,
+    price: 25,
+    focus: "Basic Skills & Fundamentals",
   },
   {
     id: 3,
-    name: "U15 Volleyball Training",
-    description: "Advanced level training for players under 15 years old.",
-    image: "/placeholder.svg?height=300&width=500",
-    rating: 4.7,
-    subgroups: ["Advanced", "Elite"],
-    minCapacity: 6,
-    maxCapacity: 12,
-    sessionLength: 120,
-    sessionPrice: 70,
+    ageGroup: "U15",
+    subgroup: "Competitive",
+    date: "Wednesday, Jan 17",
+    time: "5:00 PM - 7:00 PM",
+    location: "Volleyball Academy",
+    participants: 6,
+    maxParticipants: 12,
+    spotsLeft: 6,
+    price: 35,
+    focus: "Tournament Preparation",
   },
   {
     id: 4,
-    name: "U16 Volleyball Training",
-    description: "Elite level training for players under 16 years old.",
-    image: "/placeholder.svg?height=300&width=500",
-    rating: 4.8,
-    subgroups: ["Elite"],
-    minCapacity: 6,
-    maxCapacity: 12,
-    sessionLength: 120,
-    sessionPrice: 80,
+    ageGroup: "U16",
+    subgroup: "Elite",
+    date: "Thursday, Jan 18",
+    time: "6:30 PM - 8:30 PM",
+    location: "Premier Training Facility",
+    participants: 7,
+    maxParticipants: 8,
+    spotsLeft: 1,
+    price: 40,
+    focus: "Advanced Techniques & Strategy",
   },
 ]
