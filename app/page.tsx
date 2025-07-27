@@ -1,42 +1,65 @@
+"use client"
+
 import Link from "next/link"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Users, Calendar, ArrowRight, MapPin, Clock } from "lucide-react"
-import { prisma } from "@/lib/prisma"
 
-async function getUpcomingSessions() {
-  const sessions = await prisma.session.findMany({
-    include: {
-      registrations: true,
-    },
-    orderBy: {
-      date: 'asc',
-    },
-    take: 3,
-  })
-
-  return sessions.map(session => ({
-    id: session.id,
-    ageGroup: session.ageGroup,
-    subgroup: session.subgroup,
-    date: session.date.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "short",
-      day: "numeric",
-    }),
-    time: session.time,
-    location: session.location,
-    participants: session.registrations.length,
-    maxParticipants: session.maxParticipants,
-    spotsLeft: session.maxParticipants - session.registrations.length,
-    price: session.price,
-    focus: session.focus,
-  }))
+interface Session {
+  id: number
+  ageGroup: string
+  subgroup: string
+  date: string
+  time: string
+  location: string
+  participants: number
+  maxParticipants: number
+  spotsLeft: number
+  price: number
+  focus: string
 }
 
-export default async function Home() {
-  const upcomingSessions = await getUpcomingSessions()
+export default function Home() {
+  const [upcomingSessions, setUpcomingSessions] = useState<Session[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchUpcomingSessions()
+  }, [])
+
+  const fetchUpcomingSessions = async () => {
+    try {
+      const response = await fetch('/api/sessions')
+      if (response.ok) {
+        const sessions = await response.json()
+        // Take first 3 sessions and format for homepage
+        const formatted = sessions.slice(0, 3).map((session: any) => ({
+          id: session.id,
+          ageGroup: session.ageGroup,
+          subgroup: session.subgroup,
+          date: new Date(session.date).toLocaleDateString("en-US", {
+            weekday: "long",
+            month: "short",
+            day: "numeric",
+          }),
+          time: session.time,
+          location: session.location,
+          participants: session.currentParticipants,
+          maxParticipants: session.maxParticipants,
+          spotsLeft: session.maxParticipants - session.currentParticipants,
+          price: session.price,
+          focus: session.focus,
+        }))
+        setUpcomingSessions(formatted)
+      }
+    } catch (error) {
+      console.error('Error fetching sessions:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <header className="bg-white border-b sticky top-0 z-10">
@@ -96,7 +119,31 @@ export default async function Home() {
             <h2 className="text-3xl font-bold mb-10 text-center">Upcoming Sessions</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-              {upcomingSessions.map((session) => (
+              {loading ? (
+                // Loading skeleton
+                [...Array(3)].map((_, i) => (
+                  <Card key={i} className="overflow-hidden">
+                    <CardHeader className="pb-3">
+                      <div className="animate-pulse">
+                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="animate-pulse space-y-2">
+                        <div className="h-3 bg-gray-200 rounded"></div>
+                        <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+                        <div className="h-3 bg-gray-200 rounded w-4/6"></div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : upcomingSessions.length === 0 ? (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-gray-600">No upcoming sessions available.</p>
+                </div>
+              ) : (
+                upcomingSessions.map((session) => (
                 <Card key={session.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
@@ -141,7 +188,8 @@ export default async function Home() {
                     </Link>
                   </CardFooter>
                 </Card>
-              ))}
+                ))
+              )}
             </div>
 
             <div className="text-center mt-12">
