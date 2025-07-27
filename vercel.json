@@ -1,4 +1,6 @@
 {
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
   "build": {
     "env": {
       "PRISMA_GENERATE_DATAPROXY": "true"
