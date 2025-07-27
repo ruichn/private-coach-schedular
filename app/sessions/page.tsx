@@ -1,38 +1,50 @@
+"use client"
+
 import Link from "next/link"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, MapPin, Users } from "lucide-react"
-import { prisma } from "@/lib/prisma"
 
-async function getSessions() {
-  const sessions = await prisma.session.findMany({
-    include: {
-      registrations: true,
-    },
-    orderBy: {
-      date: 'asc',
-    },
-  })
-
-  return sessions.map(session => ({
-    id: session.id,
-    ageGroup: session.ageGroup,
-    subgroup: session.subgroup,
-    date: session.date.toISOString().split('T')[0], // Convert to YYYY-MM-DD format
-    time: session.time,
-    location: session.location,
-    address: session.address,
-    maxParticipants: session.maxParticipants,
-    currentParticipants: session.registrations.length,
-    price: session.price,
-    focus: session.focus,
-    status: session.registrations.length >= session.maxParticipants ? 'full' : 'open',
-  }))
+interface Session {
+  id: number
+  ageGroup: string
+  subgroup: string
+  date: string
+  time: string
+  location: string
+  address: string
+  maxParticipants: number
+  currentParticipants: number
+  price: number
+  focus: string
+  status: string
 }
 
-export default async function SessionsPage() {
-  const sessions = await getSessions()
+export default function SessionsPage() {
+  const [sessions, setSessions] = useState<Session[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchSessions()
+  }, [])
+
+  const fetchSessions = async () => {
+    try {
+      const response = await fetch('/api/sessions')
+      if (response.ok) {
+        const data = await response.json()
+        setSessions(data)
+      } else {
+        console.error('Failed to fetch sessions')
+      }
+    } catch (error) {
+      console.error('Error fetching sessions:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString("en-US", {
@@ -95,8 +107,21 @@ export default async function SessionsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sessions.map((session) => (
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading training sessions...</p>
+          </div>
+        ) : sessions.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600 mb-4">No training sessions available at the moment.</p>
+            <Link href="/contact">
+              <Button variant="outline">Contact Coach Robe</Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sessions.map((session) => (
             <Card key={session.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
@@ -157,8 +182,9 @@ export default async function SessionsPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div className="mt-12 text-center space-y-6">
           <div>
