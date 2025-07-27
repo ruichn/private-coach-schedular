@@ -1,0 +1,207 @@
+import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { sendRegistrationConfirmation } from '@/lib/email'
+import crypto from 'crypto'
+
+export async function POST(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const body = await request.json()
+    const {
+      playerName,
+      playerAge,
+      parentName,
+      parentEmail,
+      parentPhone,
+      emergencyContact,
+      emergencyPhone,
+      medicalInfo,
+      experience,
+      specialNotes,
+    } = body
+
+    const sessionId = Number(params.id)
+    console.log('Registration request for session:', sessionId, 'Player:', playerName)
+
+    // Check if session exists and has capacity
+    const session = await prisma.session.findUnique({
+      where: { id: sessionId },
+      include: { registrations: true },
+    })
+
+    if (!session) {
+      return NextResponse.json({ error: 'Session not found' }, { status: 404 })
+    }
+
+    if (session.registrations.length >= session.maxParticipants) {
+      return NextResponse.json({ error: 'Session is full' }, { status: 400 })
+    }
+
+    // Generate cancellation token that expires 24 hours before session
+    const cancellationToken = crypto.randomBytes(32).toString('hex')
+    
+    // Extract start time from time range and convert to 24-hour format
+    let startTime = session.time.split(' - ')[0] || session.time.split('-')[0] || session.time
+    
+    // Convert 12-hour format to 24-hour format for parsing
+    if (startTime.includes('PM') || startTime.includes('AM')) {
+      const [time, modifier] = startTime.split(' ')
+      let [hours, minutes] = time.split(':')
+      
+      if (modifier === 'AM') {
+        if (hours === '12') {
+          hours = '00'
+        }
+      } else if (modifier === 'PM') {
+        if (hours !== '12') {
+          hours = (parseInt(hours, 10) + 12).toString()
+        }
+      }
+      
+      startTime = `${hours.padStart(2, '0')}:${minutes || '00'}`
+    }
+    
+    const sessionDateTime = new Date(`${session.date.toISOString().split('T')[0]}T${startTime}:00`)
+    const tokenExpiresAt = new Date(sessionDateTime.getTime() - 24 * 60 * 60 * 1000) // 24 hours before session
+
+    // Use transaction to ensure data consistency
+    const result = await prisma.$transaction(async (tx) => {
+      // Create the registration
+      const registration = await tx.registration.create({
+        data: {
+          sessionId,
+          playerName,
+          playerAge: playerAge ? Number(playerAge) : null,
+          parentName,
+          parentEmail,
+          parentPhone,
+          emergencyContact: emergencyContact || null,
+          emergencyPhone: emergencyPhone || null,
+          medicalInfo: medicalInfo || null,
+          experience: experience || null,
+          specialNotes: specialNotes || null,
+          cancellationToken,
+          tokenExpiresAt,
+        },
+      })
+
+      // Update session participant count
+      await tx.session.update({
+        where: { id: sessionId },
+        data: {
+          currentParticipants: session.registrations.length + 1,
+        },
+      })
+
+      return registration
+    })
+
+    // Send confirmation email
+    try {
+      const cancellationUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/cancel/${cancellationToken}`
+      
+      await sendRegistrationConfirmation({
+        playerName,
+        parentName,
+        parentEmail,
+        sessionDate: session.date.toISOString(),
+        sessionTime: session.time,
+        sessionLocation: session.location,
+        sessionAddress: session.address,
+        ageGroup: session.ageGroup,
+        subgroup: session.subgroup,
+        focus: session.focus,
+        price: session.price,
+        cancellationToken,
+        cancellationUrl,
+      })
+      
+      console.log('Registration confirmation email sent to:', parentEmail)
+    } catch (emailError) {
+      console.error('Failed to send confirmation email:', emailError)
+      // Don't fail the registration if email fails
+    }
+
+    console.log('Registration created successfully:', result.id)
+    return NextResponse.json(result, { status: 201 })
+  } catch (error) {
+    console.error('Registration error:', error)
+    return NextResponse.json({ 
+      error: 'Internal Server Error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const email = searchParams.get('email')
+    const playerName = searchParams.get('playerName')
+    
+    if (!email || !playerName) {
+      return NextResponse.json({ 
+        error: 'Email and player name are required' 
+      }, { status: 400 })
+    }
+
+    const sessionId = Number(params.id)
+    console.log('Cancellation request for session:', sessionId, 'Email:', email, 'Player:', playerName)
+
+    // Find the registration
+    const registration = await prisma.registration.findFirst({
+      where: {
+        sessionId: sessionId,
+        parentEmail: email,
+        playerName: playerName
+      }
+    })
+
+    if (!registration) {
+      return NextResponse.json({ 
+        error: 'Registration not found. Please check your email and player name.' 
+      }, { status: 404 })
+    }
+
+    // Get current session to update participant count
+    const session = await prisma.session.findUnique({
+      where: { id: sessionId },
+      include: { registrations: true }
+    })
+
+    if (!session) {
+      return NextResponse.json({ error: 'Session not found' }, { status: 404 })
+    }
+
+    // Delete registration and update participant count in transaction
+    await prisma.$transaction(async (tx) => {
+      await tx.registration.delete({
+        where: { id: registration.id }
+      })
+
+      await tx.session.update({
+        where: { id: sessionId },
+        data: {
+          currentParticipants: Math.max(0, session.currentParticipants - 1)
+        }
+      })
+    })
+
+    console.log('Registration cancelled successfully:', registration.id)
+    return NextResponse.json({ 
+      message: 'Registration cancelled successfully',
+      playerName: registration.playerName 
+    })
+  } catch (error) {
+    console.error('Cancellation error:', error)
+    return NextResponse.json({ 
+      error: 'Internal Server Error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
+  }
+}

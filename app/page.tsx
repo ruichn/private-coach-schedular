@@ -3,8 +3,40 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Users, Calendar, ArrowRight, MapPin, Clock } from "lucide-react"
+import { prisma } from "@/lib/prisma"
 
-export default function Home() {
+async function getUpcomingSessions() {
+  const sessions = await prisma.session.findMany({
+    include: {
+      registrations: true,
+    },
+    orderBy: {
+      date: 'asc',
+    },
+    take: 3,
+  })
+
+  return sessions.map(session => ({
+    id: session.id,
+    ageGroup: session.ageGroup,
+    subgroup: session.subgroup,
+    date: session.date.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+    }),
+    time: session.time,
+    location: session.location,
+    participants: session.registrations.length,
+    maxParticipants: session.maxParticipants,
+    spotsLeft: session.maxParticipants - session.registrations.length,
+    price: session.price,
+    focus: session.focus,
+  }))
+}
+
+export default async function Home() {
+  const upcomingSessions = await getUpcomingSessions()
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <header className="bg-white border-b sticky top-0 z-10">
@@ -16,8 +48,11 @@ export default function Home() {
             <Link href="/sessions" className="text-sm font-medium hover:text-gray-600">
               Sessions
             </Link>
-            <Link href="/coaches" className="text-sm font-medium hover:text-gray-600">
-              Programs
+            <Link href="/cancel" className="text-sm font-medium hover:text-gray-600">
+              Cancel Registration
+            </Link>
+            <Link href="/contact" className="text-sm font-medium hover:text-gray-600">
+              Contact
             </Link>
             <Link href="/about" className="text-sm font-medium hover:text-gray-600">
               About
@@ -28,9 +63,6 @@ export default function Home() {
               <Button variant="outline" size="sm">
                 Coach Login
               </Button>
-            </Link>
-            <Link href="/sessions">
-              <Button size="sm">View Sessions</Button>
             </Link>
           </div>
         </div>
@@ -158,6 +190,23 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Cancel Registration Section */}
+        <section className="py-12 bg-red-50 border-t border-red-100">
+          <div className="container mx-auto px-4 text-center">
+            <h3 className="text-2xl font-bold mb-4 text-red-800">Need to Cancel a Registration?</h3>
+            <p className="text-gray-700 mb-6 max-w-2xl mx-auto">
+              If you need to cancel your training session registration, you can do so easily through our cancellation system.
+              <br />
+              <span className="text-sm text-red-600 font-medium">Note: Cancellations must be made at least 24 hours before the session.</span>
+            </p>
+            <Link href="/cancel">
+              <Button variant="outline" className="border-red-300 text-red-700 hover:bg-red-100">
+                Cancel Registration
+              </Button>
+            </Link>
+          </div>
+        </section>
+
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
@@ -187,8 +236,8 @@ export default function Home() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/coaches" className="text-gray-400 hover:text-white">
-                    Programs
+                  <Link href="/contact" className="text-gray-400 hover:text-white">
+                    Contact
                   </Link>
                 </li>
                 <li>
@@ -263,44 +312,3 @@ export default function Home() {
   )
 }
 
-const upcomingSessions = [
-  {
-    id: 1,
-    ageGroup: "U13",
-    subgroup: "Beginners",
-    date: "Monday, Jan 15",
-    time: "4:00 PM - 5:30 PM",
-    location: "Central High School Gym",
-    participants: 8,
-    maxParticipants: 12,
-    spotsLeft: 4,
-    price: 25,
-    focus: "Basic Skills & Fundamentals",
-  },
-  {
-    id: 3,
-    ageGroup: "U15",
-    subgroup: "Competitive",
-    date: "Wednesday, Jan 17",
-    time: "5:00 PM - 7:00 PM",
-    location: "Volleyball Academy",
-    participants: 6,
-    maxParticipants: 12,
-    spotsLeft: 6,
-    price: 35,
-    focus: "Tournament Preparation",
-  },
-  {
-    id: 4,
-    ageGroup: "U16",
-    subgroup: "Elite",
-    date: "Thursday, Jan 18",
-    time: "6:30 PM - 8:30 PM",
-    location: "Premier Training Facility",
-    participants: 7,
-    maxParticipants: 8,
-    spotsLeft: 1,
-    price: 40,
-    focus: "Advanced Techniques & Strategy",
-  },
-]

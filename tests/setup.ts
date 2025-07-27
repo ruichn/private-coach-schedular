@@ -15,8 +15,10 @@ vi.mock("next/router", () => ({
 
 // Mock Next.js link
 vi.mock("next/link", () => {
-  return ({ children, href }: { children: React.ReactNode; href: string }) => {
-    return <a href={href}>{children}</a>
+  return {
+    default: ({ children, href }: { children: React.ReactNode; href: string }) => {
+      return React.createElement('a', { href }, children)
+    }
   }
 })
 

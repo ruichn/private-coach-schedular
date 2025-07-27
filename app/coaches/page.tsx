@@ -89,8 +89,8 @@ export default function CoachesPage() {
                 Log in
               </Button>
             </Link>
-            <Link href="/signup">
-              <Button size="sm">Sign up</Button>
+            <Link href="/sessions">
+              <Button size="sm">Browse Sessions</Button>
             </Link>
           </div>
         </div>

@@ -5,100 +5,65 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, MapPin, Star, Users, Video } from "lucide-react"
 import BookingForm from "@/components/booking-form"
+import { prisma } from "@/lib/prisma"
 
-export default function CoachProfile({ params }: { params: { id: string } }) {
-  // In a real app, you would fetch the coach data based on the ID
-  const coach = {
-    id: Number.parseInt(params.id),
-    name: "Coach Robe",
-    title: "Professional Volleyball Coach",
-    image: "/placeholder.svg?height=400&width=400",
-    rating: 4.9,
-    reviewCount: 127,
-    specialties: ["Youth Development", "Skill Progression", "Team Building", "Competition Prep", "Mental Training"],
-    minGroupSize: 4,
-    maxGroupSize: 12,
-    sessionLength: 60,
-    hourlyRate: 85,
-    location: "New York, NY",
-    virtualAvailable: false,
-    bio: "With over 15 years of experience coaching youth volleyball, Coach Robe has developed hundreds of players from beginner to elite levels. Specializing in age-appropriate training methods, he focuses on building strong fundamentals while developing each player's unique strengths. His programs have produced numerous scholarship athletes and championship teams.",
-    experience: [
-      {
-        title: "Head Volleyball Coach",
-        company: "Elite Volleyball Academy",
-        period: "2015 - Present",
-      },
-      {
-        title: "Assistant Volleyball Coach",
-        company: "Premier Volleyball Club",
-        period: "2012 - 2015",
-      },
-      {
-        title: "Volleyball Camp Instructor",
-        company: "Summer Sports Camps",
-        period: "2010 - 2012",
-      },
-    ],
-    certifications: [
-      "USA Volleyball Certified Coach",
-      "Youth Sports Safety Certified",
-      "First Aid/CPR Certified",
-      "Positive Coaching Alliance Certified",
-    ],
-    reviews: [
-      {
-        id: 1,
-        name: "Jennifer L.",
-        rating: 5,
-        date: "June 15, 2023",
-        comment: "Coach Robe is an amazing volleyball coach! My daughter has improved so much under his guidance.",
-      },
-      {
-        id: 2,
-        name: "Michael T.",
-        rating: 5,
-        date: "May 3, 2023",
-        comment:
-          "Our volleyball team hired Coach Robe for a 6-week training program. His expertise and enthusiasm pushed us to new levels.",
-      },
-      {
-        id: 3,
-        name: "Sophia R.",
-        rating: 4,
-        date: "April 22, 2023",
-        comment:
-          "Coach Robe led a wonderful volleyball clinic for our group of friends. He created a perfect balance of challenging drills and fun games.",
-      },
-    ],
-    availability: {
-      monday: ["6:00 PM - 8:00 PM"],
-      tuesday: ["6:00 PM - 8:00 PM"],
-      wednesday: ["6:00 PM - 8:00 PM"],
-      thursday: ["6:00 PM - 8:00 PM"],
-      friday: [],
-      saturday: ["9:00 AM - 12:00 PM"],
-      sunday: ["1:00 PM - 4:00 PM"],
+interface Coach {
+  id: number;
+  name: string;
+  title: string;
+  image: string | null;
+  rating: number;
+  reviewCount: number;
+  specialties: string[];
+  minGroupSize: number;
+  maxGroupSize: number;
+  sessionLength: number;
+  hourlyRate: number;
+  location: string;
+  virtualAvailable: boolean;
+  bio: string;
+  experience: { title: string; company: string; period: string }[];
+  certifications: { name: string }[];
+  reviews: { id: number; name: string; rating: number; date: string; comment: string }[];
+  availability: { day: string; times: string[] }[];
+  ageGroups: { name: string; description: string; focus: string[] }[];
+}
+
+async function getCoach(id: string): Promise<Coach> {
+  const coach = await prisma.coach.findUnique({
+    where: { id: Number(id) },
+    include: {
+      experience: true,
+      certifications: true,
+      reviews: true,
+      availability: true,
+      ageGroups: true,
     },
+  })
+
+  if (!coach) {
+    throw new Error('Coach not found')
   }
 
-  const ageGroup = {
-    "10U": {
-      name: "10 and Under",
-      description: "Introduction to volleyball fundamentals for players aged 10 and under.",
-      focus: ["Basic skills", "Fun games", "Teamwork"],
-    },
-    "12U": {
-      name: "12 and Under",
-      description: "Intermediate volleyball training for players aged 11-12.",
-      focus: ["Skill development", "Game strategy", "Competition"],
-    },
-    "14U": {
-      name: "14 and Under",
-      description: "Advanced volleyball training for players aged 13-14.",
-      focus: ["Advanced techniques", "Position specialization", "Tournament preparation"],
-    },
-  }[params.id] || {
+  // Split the string fields back into arrays
+  return {
+    ...coach,
+    specialties: coach.specialties.split(','),
+    availability: coach.availability.map(a => ({ ...a, times: a.times.split(',') })),
+    ageGroups: coach.ageGroups.map(ag => ({ ...ag, focus: ag.focus.split(',') })),
+  }
+}
+
+export default async function CoachProfile({ params }: { params: { id: string } }) {
+  const coach: Coach = await getCoach(params.id);
+
+  if (!coach) {
+    return <div>Coach not found</div>
+  }
+
+  // Assuming the first age group is the relevant one for now.
+  // In a real app, you might have a different way of selecting the age group.
+  const ageGroup = coach.ageGroups[0] || {
     name: "Age Group Not Found",
     description: "No information available for this age group.",
     focus: [],
@@ -128,8 +93,8 @@ export default function CoachProfile({ params }: { params: { id: string } }) {
                 Log in
               </Button>
             </Link>
-            <Link href="/signup">
-              <Button size="sm">Sign up</Button>
+            <Link href="/sessions">
+              <Button size="sm">Browse Sessions</Button>
             </Link>
           </div>
         </div>
@@ -166,7 +131,7 @@ export default function CoachProfile({ params }: { params: { id: string } }) {
                   </div>
 
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {coach.specialties.map((specialty) => (
+                    {coach.specialties.map((specialty: string) => (
                       <Badge key={specialty} variant="secondary">
                         {specialty}
                       </Badge>
@@ -236,7 +201,7 @@ export default function CoachProfile({ params }: { params: { id: string } }) {
                 <h3 className="text-lg font-bold mb-3">Certifications</h3>
                 <ul className="list-disc pl-5 mb-6 space-y-1">
                   {coach.certifications.map((cert, index) => (
-                    <li key={index}>{cert}</li>
+                    <li key={index}>{cert.name}</li>
                   ))}
                 </ul>
 
@@ -306,14 +271,14 @@ export default function CoachProfile({ params }: { params: { id: string } }) {
               <TabsContent value="availability" className="p-6">
                 <h2 className="text-xl font-bold mb-4">Weekly Availability</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(coach.availability).map(([day, times]) => (
-                    <Card key={day} className="overflow-hidden">
+                  {coach.availability.map((day) => (
+                    <Card key={day.day} className="overflow-hidden">
                       <CardContent className="p-0">
-                        <div className="bg-gray-100 p-3 font-medium capitalize">{day}</div>
+                        <div className="bg-gray-100 p-3 font-medium capitalize">{day.day}</div>
                         <div className="p-3">
-                          {times.length > 0 ? (
+                          {day.times.length > 0 ? (
                             <ul className="space-y-1">
-                              {times.map((time, index) => (
+                              {day.times.map((time, index) => (
                                 <li key={index} className="text-sm">
                                   {time}
                                 </li>
@@ -337,7 +302,7 @@ export default function CoachProfile({ params }: { params: { id: string } }) {
 
                 <h3 className="text-lg font-bold mb-3">Focus Areas</h3>
                 <ul className="list-disc pl-5 mb-6 space-y-1">
-                  {ageGroup.focus.map((focus, index) => (
+                  {ageGroup.focus.map((focus: string, index: number) => (
                     <li key={index}>{focus}</li>
                   ))}
                 </ul>

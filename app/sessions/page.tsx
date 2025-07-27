@@ -3,95 +3,36 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, MapPin, Users } from "lucide-react"
+import { prisma } from "@/lib/prisma"
 
-const sessions = [
-  {
-    id: 1,
-    ageGroup: "U13",
-    subgroup: "Beginners",
-    date: "2024-01-15",
-    time: "4:00 PM - 5:30 PM",
-    location: "Central High School Gym",
-    address: "123 Main St, New York, NY",
-    maxParticipants: 12,
-    currentParticipants: 8,
-    price: 25,
-    focus: "Basic Skills & Fundamentals",
-    status: "open",
-  },
-  {
-    id: 2,
-    ageGroup: "U14",
-    subgroup: "Intermediate",
-    date: "2024-01-16",
-    time: "6:00 PM - 7:30 PM",
-    location: "Elite Sports Center",
-    address: "456 Sports Ave, New York, NY",
-    maxParticipants: 10,
-    currentParticipants: 10,
-    price: 30,
-    focus: "Serving & Passing Techniques",
-    status: "full",
-  },
-  {
-    id: 3,
-    ageGroup: "U15",
-    subgroup: "Competitive",
-    date: "2024-01-17",
-    time: "5:00 PM - 7:00 PM",
-    location: "Volleyball Academy",
-    address: "789 Court Rd, New York, NY",
-    maxParticipants: 12,
-    currentParticipants: 6,
-    price: 35,
-    focus: "Tournament Preparation",
-    status: "open",
-  },
-  {
-    id: 4,
-    ageGroup: "U16",
-    subgroup: "Elite",
-    date: "2024-01-18",
-    time: "6:30 PM - 8:30 PM",
-    location: "Premier Training Facility",
-    address: "321 Elite Blvd, New York, NY",
-    maxParticipants: 8,
-    currentParticipants: 7,
-    price: 40,
-    focus: "Advanced Techniques & Strategy",
-    status: "open",
-  },
-  {
-    id: 5,
-    ageGroup: "U13",
-    subgroup: "Intermediate",
-    date: "2024-01-19",
-    time: "3:30 PM - 5:00 PM",
-    location: "Community Center",
-    address: "654 Community Dr, New York, NY",
-    maxParticipants: 12,
-    currentParticipants: 9,
-    price: 25,
-    focus: "Game Play & Teamwork",
-    status: "open",
-  },
-  {
-    id: 6,
-    ageGroup: "U14",
-    subgroup: "Advanced",
-    date: "2024-01-20",
-    time: "10:00 AM - 11:30 AM",
-    location: "Central High School Gym",
-    address: "123 Main St, New York, NY",
-    maxParticipants: 10,
-    currentParticipants: 4,
-    price: 30,
-    focus: "Spiking & Blocking",
-    status: "open",
-  },
-]
+async function getSessions() {
+  const sessions = await prisma.session.findMany({
+    include: {
+      registrations: true,
+    },
+    orderBy: {
+      date: 'asc',
+    },
+  })
 
-export default function SessionsPage() {
+  return sessions.map(session => ({
+    id: session.id,
+    ageGroup: session.ageGroup,
+    subgroup: session.subgroup,
+    date: session.date.toISOString().split('T')[0], // Convert to YYYY-MM-DD format
+    time: session.time,
+    location: session.location,
+    address: session.address,
+    maxParticipants: session.maxParticipants,
+    currentParticipants: session.registrations.length,
+    price: session.price,
+    focus: session.focus,
+    status: session.registrations.length >= session.maxParticipants ? 'full' : 'open',
+  }))
+}
+
+export default async function SessionsPage() {
+  const sessions = await getSessions()
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString("en-US", {
@@ -126,11 +67,11 @@ export default function SessionsPage() {
             <Link href="/sessions" className="text-sm font-medium hover:text-gray-600">
               Sessions
             </Link>
-            <Link href="/coaches" className="text-sm font-medium hover:text-gray-600">
-              Programs
-            </Link>
             <Link href="/about" className="text-sm font-medium hover:text-gray-600">
               About
+            </Link>
+            <Link href="/contact" className="text-sm font-medium hover:text-gray-600">
+              Contact
             </Link>
           </nav>
           <div className="flex items-center gap-4">
@@ -138,9 +79,6 @@ export default function SessionsPage() {
               <Button variant="outline" size="sm">
                 Coach Login
               </Button>
-            </Link>
-            <Link href="/signup">
-              <Button size="sm">Sign up</Button>
             </Link>
           </div>
         </div>
@@ -222,11 +160,20 @@ export default function SessionsPage() {
           ))}
         </div>
 
-        <div className="mt-12 text-center">
-          <p className="text-gray-600 mb-4">Don't see a session that fits your schedule?</p>
-          <Link href="/contact">
-            <Button variant="outline">Contact Coach Robe</Button>
-          </Link>
+        <div className="mt-12 text-center space-y-6">
+          <div>
+            <p className="text-gray-600 mb-4">Don't see a session that fits your schedule?</p>
+            <Link href="/contact">
+              <Button variant="outline">Contact Coach Robe</Button>
+            </Link>
+          </div>
+          
+          <div className="border-t pt-6">
+            <p className="text-gray-600 mb-4">Need to cancel a registration?</p>
+            <Link href="/cancel">
+              <Button variant="outline">Cancel Registration</Button>
+            </Link>
+          </div>
         </div>
       </main>
     </div>

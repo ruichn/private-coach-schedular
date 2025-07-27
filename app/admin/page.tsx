@@ -2,7 +2,9 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { isAdminAuthenticated, useAdminAuth } from "@/lib/auth"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,53 +15,85 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, MapPin, Users, Plus, Edit, Trash2 } from "lucide-react"
 
-const existingSessions = [
-  {
-    id: 1,
-    ageGroup: "U13",
-    subgroup: "Beginners",
-    date: "2024-01-15",
-    time: "4:00 PM - 5:30 PM",
-    location: "Central High School Gym",
-    address: "123 Main St, New York, NY",
-    maxParticipants: 12,
-    currentParticipants: 8,
-    price: 25,
-    focus: "Basic Skills & Fundamentals",
-    status: "open",
-  },
-  {
-    id: 2,
-    ageGroup: "U14",
-    subgroup: "Intermediate",
-    date: "2024-01-16",
-    time: "6:00 PM - 7:30 PM",
-    location: "Elite Sports Center",
-    address: "456 Sports Ave, New York, NY",
-    maxParticipants: 10,
-    currentParticipants: 10,
-    price: 30,
-    focus: "Serving & Passing Techniques",
-    status: "full",
-  },
-]
+interface Session {
+  id: number
+  ageGroup: string
+  subgroup: string
+  date: string
+  time: string
+  location: string
+  address: string
+  maxParticipants: number
+  currentParticipants: number
+  price: number
+  focus: string
+  status: string
+}
 
 export default function AdminPage() {
-  const [sessions, setSessions] = useState(existingSessions)
+  const router = useRouter()
+  const { isAuthenticated, logout } = useAdminAuth()
+  const [sessions, setSessions] = useState<Session[]>([])
+  const [loading, setLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [editingSession, setEditingSession] = useState<Session | null>(null)
   const [formData, setFormData] = useState({
     ageGroup: "",
     subgroup: "",
     date: "",
     startTime: "",
     endTime: "",
-    location: "",
-    address: "",
+    location: "The Overlake School Gym",
+    address: "20301 NE 108th St, Redmond, WA 98053",
     maxParticipants: "",
     price: "",
     focus: "",
     notes: "",
   })
+
+  // Check authentication on component mount
+  useEffect(() => {
+    if (!isAdminAuthenticated()) {
+      router.push('/admin/login')
+      return
+    }
+  }, [router])
+
+  // Fetch sessions from API
+  useEffect(() => {
+    if (isAdminAuthenticated()) {
+      fetchSessions()
+    }
+  }, [])
+
+  const fetchSessions = async () => {
+    try {
+      const response = await fetch('/api/sessions')
+      if (response.ok) {
+        const data = await response.json()
+        const formattedSessions = data.map((session: any) => ({
+          id: session.id,
+          ageGroup: session.ageGroup,
+          subgroup: session.subgroup,
+          date: new Date(session.date).toISOString().split('T')[0],
+          time: session.time,
+          location: session.location,
+          address: session.address,
+          maxParticipants: session.maxParticipants,
+          currentParticipants: session.registrations.length,
+          price: session.price,
+          focus: session.focus,
+          status: session.registrations.length >= session.maxParticipants ? 'full' : 'open',
+        }))
+        setSessions(formattedSessions)
+      }
+    } catch (error) {
+      console.error('Error fetching sessions:', error)
+      alert('Error loading sessions')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -76,47 +110,151 @@ export default function AdminPage() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const newSession = {
-      id: sessions.length + 1,
+    // Validate required fields
+    if (!formData.ageGroup || !formData.subgroup || !formData.date || 
+        !formData.startTime || !formData.endTime || !formData.location || 
+        !formData.address || !formData.maxParticipants || !formData.price || !formData.focus) {
+      alert('Please fill in all required fields')
+      return
+    }
+
+    const sessionData = {
+      coachId: 3, // Default to Coach Robe
       ageGroup: formData.ageGroup,
       subgroup: formData.subgroup,
       date: formData.date,
-      time: `${formData.startTime} - ${formData.endTime}`,
+      time: `${convertTo12Hour(formData.startTime)} - ${convertTo12Hour(formData.endTime)}`,
       location: formData.location,
       address: formData.address,
       maxParticipants: Number.parseInt(formData.maxParticipants),
-      currentParticipants: 0,
-      price: Number.parseInt(formData.price),
+      price: Number.parseFloat(formData.price),
       focus: formData.focus,
-      status: "open",
     }
+    
 
-    setSessions((prev) => [...prev, newSession])
-    setShowCreateForm(false)
+    try {
+      let response
+      if (editingSession) {
+        // Update existing session
+        response = await fetch(`/api/sessions/${editingSession.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(sessionData),
+        })
+      } else {
+        // Create new session
+        response = await fetch('/api/sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(sessionData),
+        })
+      }
+
+      if (response.ok) {
+        await fetchSessions() // Refresh the sessions list
+        setShowCreateForm(false)
+        setEditingSession(null)
+        resetForm()
+        alert(editingSession ? "Session updated successfully!" : "Session created successfully!")
+      } else {
+        const errorData = await response.text()
+        alert(`Error saving session: ${response.status}`)
+      }
+    } catch (error) {
+      console.error('Error saving session:', error)
+      alert('Error saving session')
+    }
+  }
+
+  const resetForm = () => {
     setFormData({
       ageGroup: "",
       subgroup: "",
       date: "",
       startTime: "",
       endTime: "",
-      location: "",
-      address: "",
+      location: "The Overlake School Gym",
+      address: "20301 NE 108th St, Redmond, WA 98053",
       maxParticipants: "",
       price: "",
       focus: "",
       notes: "",
     })
-
-    alert("Session created successfully!")
   }
 
-  const deleteSession = (id: number) => {
-    if (confirm("Are you sure you want to delete this session?")) {
-      setSessions((prev) => prev.filter((session) => session.id !== id))
+  const deleteSession = async (id: number) => {
+    if (confirm("Are you sure you want to delete this session? This will also delete all registrations for this session.")) {
+      try {
+        console.log('Deleting session:', id)
+        const response = await fetch(`/api/sessions/${id}`, {
+          method: 'DELETE',
+        })
+        
+        console.log('Delete response status:', response.status)
+        
+        if (response.ok) {
+          await fetchSessions() // Refresh the sessions list
+          alert('Session deleted successfully!')
+        } else {
+          const errorData = await response.json()
+          console.error('Delete error response:', errorData)
+          alert(`Error deleting session: ${errorData.details || 'Unknown error'}`)
+        }
+      } catch (error) {
+        console.error('Error deleting session:', error)
+        alert('Error deleting session - check console for details')
+      }
     }
+  }
+
+  const editSession = (session: Session) => {
+    setEditingSession(session)
+    setShowCreateForm(true)
+    
+    // Parse the time string to get start and end times
+    const [startTime, endTime] = session.time.split(' - ')
+    
+    setFormData({
+      ageGroup: session.ageGroup,
+      subgroup: session.subgroup,
+      date: session.date,
+      startTime: convertTo24Hour(startTime),
+      endTime: convertTo24Hour(endTime),
+      location: session.location,
+      address: session.address,
+      maxParticipants: session.maxParticipants.toString(),
+      price: session.price.toString(),
+      focus: session.focus,
+      notes: "",
+    })
+  }
+
+  const convertTo24Hour = (time12h: string) => {
+    const [time, modifier] = time12h.split(' ')
+    let [hours, minutes] = time.split(':')
+    
+    if (modifier === 'AM') {
+      if (hours === '12') {
+        hours = '00'
+      }
+    } else if (modifier === 'PM') {
+      if (hours !== '12') {
+        hours = (parseInt(hours, 10) + 12).toString()
+      }
+    }
+    
+    return `${hours.padStart(2, '0')}:${minutes}`
+  }
+
+  const convertTo12Hour = (time24h: string) => {
+    const [hours, minutes] = time24h.split(':')
+    const hour12 = parseInt(hours, 10)
+    const ampm = hour12 >= 12 ? 'PM' : 'AM'
+    const displayHour = hour12 % 12 || 12
+    return `${displayHour}:${minutes} ${ampm}`
   }
 
   const formatDate = (dateString: string) => {
@@ -164,24 +302,33 @@ export default function AdminPage() {
               Participants
             </Link>
           </nav>
-          <Button variant="outline" onClick={() => setShowCreateForm(!showCreateForm)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Session
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" onClick={() => setShowCreateForm(!showCreateForm)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Session
+            </Button>
+            <Button variant="ghost" onClick={logout} className="text-red-600 hover:text-red-700">
+              Logout
+            </Button>
+          </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Session Management</h1>
-          <p className="text-gray-500">Managing {sessions.length} sessions</p>
+          {loading ? (
+            <p className="text-gray-500">Loading sessions...</p>
+          ) : (
+            <p className="text-gray-500">Managing {sessions.length} sessions</p>
+          )}
         </div>
 
         {/* Create Session Form */}
         {showCreateForm && (
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>Create New Training Session</CardTitle>
+              <CardTitle>{editingSession ? 'Edit Training Session' : 'Create New Training Session'}</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -237,50 +384,112 @@ export default function AdminPage() {
                   </div>
                   <div>
                     <Label htmlFor="startTime">Start Time *</Label>
-                    <Input
-                      id="startTime"
-                      name="startTime"
-                      type="time"
-                      value={formData.startTime}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Select value={formData.startTime} onValueChange={(value) => handleSelectChange("startTime", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select start time" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="06:00">6:00 AM</SelectItem>
+                        <SelectItem value="06:30">6:30 AM</SelectItem>
+                        <SelectItem value="07:00">7:00 AM</SelectItem>
+                        <SelectItem value="07:30">7:30 AM</SelectItem>
+                        <SelectItem value="08:00">8:00 AM</SelectItem>
+                        <SelectItem value="08:30">8:30 AM</SelectItem>
+                        <SelectItem value="09:00">9:00 AM</SelectItem>
+                        <SelectItem value="09:30">9:30 AM</SelectItem>
+                        <SelectItem value="10:00">10:00 AM</SelectItem>
+                        <SelectItem value="10:30">10:30 AM</SelectItem>
+                        <SelectItem value="11:00">11:00 AM</SelectItem>
+                        <SelectItem value="11:30">11:30 AM</SelectItem>
+                        <SelectItem value="12:00">12:00 PM</SelectItem>
+                        <SelectItem value="12:30">12:30 PM</SelectItem>
+                        <SelectItem value="13:00">1:00 PM</SelectItem>
+                        <SelectItem value="13:30">1:30 PM</SelectItem>
+                        <SelectItem value="14:00">2:00 PM</SelectItem>
+                        <SelectItem value="14:30">2:30 PM</SelectItem>
+                        <SelectItem value="15:00">3:00 PM</SelectItem>
+                        <SelectItem value="15:30">3:30 PM</SelectItem>
+                        <SelectItem value="16:00">4:00 PM</SelectItem>
+                        <SelectItem value="16:30">4:30 PM</SelectItem>
+                        <SelectItem value="17:00">5:00 PM</SelectItem>
+                        <SelectItem value="17:30">5:30 PM</SelectItem>
+                        <SelectItem value="18:00">6:00 PM</SelectItem>
+                        <SelectItem value="18:30">6:30 PM</SelectItem>
+                        <SelectItem value="19:00">7:00 PM</SelectItem>
+                        <SelectItem value="19:30">7:30 PM</SelectItem>
+                        <SelectItem value="20:00">8:00 PM</SelectItem>
+                        <SelectItem value="20:30">8:30 PM</SelectItem>
+                        <SelectItem value="21:00">9:00 PM</SelectItem>
+                        <SelectItem value="21:30">9:30 PM</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label htmlFor="endTime">End Time *</Label>
-                    <Input
-                      id="endTime"
-                      name="endTime"
-                      type="time"
-                      value={formData.endTime}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Select value={formData.endTime} onValueChange={(value) => handleSelectChange("endTime", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select end time" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="06:00">6:00 AM</SelectItem>
+                        <SelectItem value="06:30">6:30 AM</SelectItem>
+                        <SelectItem value="07:00">7:00 AM</SelectItem>
+                        <SelectItem value="07:30">7:30 AM</SelectItem>
+                        <SelectItem value="08:00">8:00 AM</SelectItem>
+                        <SelectItem value="08:30">8:30 AM</SelectItem>
+                        <SelectItem value="09:00">9:00 AM</SelectItem>
+                        <SelectItem value="09:30">9:30 AM</SelectItem>
+                        <SelectItem value="10:00">10:00 AM</SelectItem>
+                        <SelectItem value="10:30">10:30 AM</SelectItem>
+                        <SelectItem value="11:00">11:00 AM</SelectItem>
+                        <SelectItem value="11:30">11:30 AM</SelectItem>
+                        <SelectItem value="12:00">12:00 PM</SelectItem>
+                        <SelectItem value="12:30">12:30 PM</SelectItem>
+                        <SelectItem value="13:00">1:00 PM</SelectItem>
+                        <SelectItem value="13:30">1:30 PM</SelectItem>
+                        <SelectItem value="14:00">2:00 PM</SelectItem>
+                        <SelectItem value="14:30">2:30 PM</SelectItem>
+                        <SelectItem value="15:00">3:00 PM</SelectItem>
+                        <SelectItem value="15:30">3:30 PM</SelectItem>
+                        <SelectItem value="16:00">4:00 PM</SelectItem>
+                        <SelectItem value="16:30">4:30 PM</SelectItem>
+                        <SelectItem value="17:00">5:00 PM</SelectItem>
+                        <SelectItem value="17:30">5:30 PM</SelectItem>
+                        <SelectItem value="18:00">6:00 PM</SelectItem>
+                        <SelectItem value="18:30">6:30 PM</SelectItem>
+                        <SelectItem value="19:00">7:00 PM</SelectItem>
+                        <SelectItem value="19:30">7:30 PM</SelectItem>
+                        <SelectItem value="20:00">8:00 PM</SelectItem>
+                        <SelectItem value="20:30">8:30 PM</SelectItem>
+                        <SelectItem value="21:00">9:00 PM</SelectItem>
+                        <SelectItem value="21:30">9:30 PM</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="location">Location Name *</Label>
+                    <Label htmlFor="location">Location Name</Label>
                     <Input
                       id="location"
                       name="location"
-                      placeholder="e.g., Central High School Gym"
                       value={formData.location}
-                      onChange={handleInputChange}
-                      required
+                      readOnly
+                      className="bg-gray-100 cursor-not-allowed"
                     />
+                    <p className="text-sm text-gray-500 mt-1">All training sessions are held at The Overlake School</p>
                   </div>
                   <div>
-                    <Label htmlFor="address">Address *</Label>
+                    <Label htmlFor="address">Address</Label>
                     <Input
                       id="address"
                       name="address"
-                      placeholder="e.g., 123 Main St, New York, NY"
                       value={formData.address}
-                      onChange={handleInputChange}
-                      required
+                      readOnly
+                      className="bg-gray-100 cursor-not-allowed"
                     />
+                    <p className="text-sm text-gray-500 mt-1">Fixed training location</p>
                   </div>
                 </div>
 
@@ -336,8 +545,12 @@ export default function AdminPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <Button type="submit">Create Session</Button>
-                  <Button type="button" variant="outline" onClick={() => setShowCreateForm(false)}>
+                  <Button type="submit">{editingSession ? 'Update Session' : 'Create Session'}</Button>
+                  <Button type="button" variant="outline" onClick={() => {
+                    setShowCreateForm(false)
+                    setEditingSession(null)
+                    resetForm()
+                  }}>
                     Cancel
                   </Button>
                 </div>
@@ -347,8 +560,13 @@ export default function AdminPage() {
         )}
 
         {/* Existing Sessions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sessions.map((session) => (
+        {loading ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">Loading sessions...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sessions.map((session) => (
             <Card key={session.id} className="overflow-hidden">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
@@ -401,7 +619,12 @@ export default function AdminPage() {
                 </div>
 
                 <div className="flex gap-2 pt-2">
-                  <Button size="sm" variant="outline" className="flex-1 bg-transparent">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="flex-1 bg-transparent"
+                    onClick={() => editSession(session)}
+                  >
                     <Edit className="h-4 w-4 mr-1" />
                     Edit
                   </Button>
@@ -417,8 +640,9 @@ export default function AdminPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   )
