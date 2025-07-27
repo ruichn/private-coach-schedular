@@ -27,21 +27,26 @@ export default function SessionsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    console.log('🚀 Sessions page mounted, starting fetch...')
     fetchSessions()
   }, [])
 
   const fetchSessions = async () => {
+    console.log('🔍 Starting to fetch sessions...')
     try {
       const response = await fetch('/api/sessions')
+      console.log('📡 Response status:', response.status)
       if (response.ok) {
         const data = await response.json()
+        console.log('📊 Sessions data received:', data.length, 'sessions')
         setSessions(data)
       } else {
-        console.error('Failed to fetch sessions')
+        console.error('❌ Failed to fetch sessions, status:', response.status)
       }
     } catch (error) {
-      console.error('Error fetching sessions:', error)
+      console.error('💥 Error fetching sessions:', error)
     } finally {
+      console.log('✅ Setting loading to false')
       setLoading(false)
     }
   }
