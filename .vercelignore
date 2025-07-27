@@ -1,0 +1,8 @@
+pnpm-lock.yaml
+.pnpmfile.cjs
+.env.local
+.env.development
+.env.production
+prisma/dev.db
+node_modules
+.DS_Store
