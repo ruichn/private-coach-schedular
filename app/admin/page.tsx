@@ -122,7 +122,7 @@ export default function AdminPage() {
     }
 
     const sessionData = {
-      coachId: 3, // Default to Coach Robe
+      coachId: 2, // Default to Coach Robe (existing coach ID)
       ageGroup: formData.ageGroup,
       subgroup: formData.subgroup,
       date: formData.date,
@@ -160,8 +160,9 @@ export default function AdminPage() {
         resetForm()
         alert(editingSession ? "Session updated successfully!" : "Session created successfully!")
       } else {
-        const errorData = await response.text()
-        alert(`Error saving session: ${response.status}`)
+        const errorData = await response.json()
+        console.error('Session save error:', errorData)
+        alert(`Error saving session: ${errorData.error || errorData.details || 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Error saving session:', error)
