@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Users, Calendar, ArrowRight, MapPin, Clock } from "lucide-react"
+import { formatSessionDateShort } from "@/lib/date-utils"
 
 interface Session {
   id: number
@@ -39,11 +40,7 @@ export default function Home() {
           id: session.id,
           ageGroup: session.ageGroup,
           subgroup: session.subgroup,
-          date: new Date(session.date).toLocaleDateString("en-US", {
-            weekday: "long",
-            month: "short",
-            day: "numeric",
-          }),
+          date: formatSessionDateShort(session.date),
           time: session.time,
           location: session.location,
           participants: session.currentParticipants,

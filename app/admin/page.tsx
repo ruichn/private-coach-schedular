@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, MapPin, Users, Plus, Edit, Trash2 } from "lucide-react"
+import { formatSessionDate, formatDateForInput } from "@/lib/date-utils"
 
 interface Session {
   id: number
@@ -75,7 +76,7 @@ export default function AdminPage() {
           id: session.id,
           ageGroup: session.ageGroup,
           subgroup: session.subgroup,
-          date: new Date(session.date).toISOString().split('T')[0],
+          date: session.date.split('T')[0], // Keep as YYYY-MM-DD for form input
           time: session.time,
           location: session.location,
           address: session.address,
@@ -258,15 +259,6 @@ export default function AdminPage() {
     return `${displayHour}:${minutes} ${ampm}`
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -586,7 +578,7 @@ export default function AdminPage() {
               <CardContent className="space-y-3">
                 <div className="flex items-center text-sm">
                   <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                  <span>{formatDate(session.date)}</span>
+                  <span>{formatSessionDate(session.date)}</span>
                 </div>
 
                 <div className="flex items-center text-sm">

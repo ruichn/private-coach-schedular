@@ -6,6 +6,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle, AlertCircle, Clock, Calendar, MapPin, UserX } from "lucide-react"
+import { formatSessionDate } from "@/lib/date-utils"
 
 interface RegistrationData {
   id: number
@@ -81,15 +82,6 @@ export default function TokenCancellationPage() {
     }
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-  }
 
   if (loading) {
     return (
@@ -130,7 +122,7 @@ export default function TokenCancellationPage() {
                 <div className="bg-gray-50 p-4 rounded-lg text-sm text-left">
                   <p className="font-medium mb-2">Cancelled Session:</p>
                   <p>{cancelledDetails.sessionDetails.ageGroup} - {cancelledDetails.sessionDetails.subgroup}</p>
-                  <p>{formatDate(cancelledDetails.sessionDetails.date)} at {cancelledDetails.sessionDetails.time}</p>
+                  <p>{formatSessionDate(cancelledDetails.sessionDetails.date)} at {cancelledDetails.sessionDetails.time}</p>
                 </div>
                 
                 <p className="text-sm text-gray-600">
@@ -254,7 +246,7 @@ export default function TokenCancellationPage() {
                   
                   <div className="flex items-center text-sm text-gray-600">
                     <Calendar className="h-4 w-4 mr-2" />
-                    <span>{formatDate(registration.session.date)}</span>
+                    <span>{formatSessionDate(registration.session.date)}</span>
                   </div>
                   
                   <div className="flex items-center text-sm text-gray-600">

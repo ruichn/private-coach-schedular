@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, MapPin, Users, ArrowLeft } from "lucide-react"
 import { prisma } from "@/lib/prisma"
 import SessionSignupForm from "@/components/session-signup-form"
+import { formatSessionDate } from "@/lib/date-utils"
 
 interface SessionData {
   id: number
@@ -43,14 +44,6 @@ export default async function SessionSignup({ params }: { params: { id: string }
     return <div>Session not found</div>
   }
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-  }
 
   const spotsRemaining = session.maxParticipants - session.currentParticipants
 
@@ -103,7 +96,7 @@ export default async function SessionSignup({ params }: { params: { id: string }
 
                 <div className="flex items-center text-sm">
                   <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                  <span>{formatDate(session.date)}</span>
+                  <span>{formatSessionDate(session.date.toISOString().split('T')[0])}</span>
                 </div>
 
                 <div className="flex items-center text-sm">

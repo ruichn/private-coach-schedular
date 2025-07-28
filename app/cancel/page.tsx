@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AlertCircle, CheckCircle, UserX } from "lucide-react"
+import { formatSessionDate } from "@/lib/date-utils"
 
 export default function CancelPage() {
   const [formData, setFormData] = useState({
@@ -103,15 +104,6 @@ export default function CancelPage() {
     }
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    })
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -190,7 +182,7 @@ export default function CancelPage() {
                       ) : (
                         availableSessions.map((session) => (
                           <SelectItem key={session.id} value={session.id.toString()}>
-                            {session.ageGroup} - {session.subgroup} • {formatDate(session.date)} • {session.time}
+                            {session.ageGroup} - {session.subgroup} • {formatSessionDate(session.date)} • {session.time}
                           </SelectItem>
                         ))
                       )}

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, MapPin, Users } from "lucide-react"
+import { formatSessionDate } from "@/lib/date-utils"
 
 interface Session {
   id: number
@@ -27,37 +28,23 @@ export default function SessionsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    console.log('🚀 Sessions page mounted, starting fetch...')
     fetchSessions()
   }, [])
 
   const fetchSessions = async () => {
-    console.log('🔍 Starting to fetch sessions...')
     try {
       const response = await fetch('/api/sessions')
-      console.log('📡 Response status:', response.status)
       if (response.ok) {
         const data = await response.json()
-        console.log('📊 Sessions data received:', data.length, 'sessions')
         setSessions(data)
       } else {
-        console.error('❌ Failed to fetch sessions, status:', response.status)
+        console.error('Failed to fetch sessions, status:', response.status)
       }
     } catch (error) {
-      console.error('💥 Error fetching sessions:', error)
+      console.error('Error fetching sessions:', error)
     } finally {
-      console.log('✅ Setting loading to false')
       setLoading(false)
     }
-  }
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
   }
 
   const getStatusColor = (status: string) => {
@@ -145,7 +132,7 @@ export default function SessionsPage() {
               <CardContent className="space-y-3">
                 <div className="flex items-center text-sm">
                   <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                  <span>{formatDate(session.date)}</span>
+                  <span>{formatSessionDate(session.date)}</span>
                 </div>
 
                 <div className="flex items-center text-sm">
