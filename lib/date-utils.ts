@@ -4,8 +4,16 @@
  */
 
 export function formatSessionDate(dateString: string): string {
-  // Parse the date string as UTC and format for display
-  const date = new Date(dateString + 'T00:00:00.000Z')
+  // Handle both YYYY-MM-DD and full ISO date strings
+  let date: Date
+  
+  if (dateString.includes('T')) {
+    // Already has time component (from API)
+    date = new Date(dateString)
+  } else {
+    // Just date string (YYYY-MM-DD), parse as UTC
+    date = new Date(dateString + 'T00:00:00.000Z')
+  }
   
   return date.toLocaleDateString("en-US", {
     weekday: "long",
@@ -16,8 +24,16 @@ export function formatSessionDate(dateString: string): string {
 }
 
 export function formatSessionDateShort(dateString: string): string {
-  // Parse the date string as UTC and format for display (shorter version)
-  const date = new Date(dateString + 'T00:00:00.000Z')
+  // Handle both YYYY-MM-DD and full ISO date strings
+  let date: Date
+  
+  if (dateString.includes('T')) {
+    // Already has time component (from API)
+    date = new Date(dateString)
+  } else {
+    // Just date string (YYYY-MM-DD), parse as UTC
+    date = new Date(dateString + 'T00:00:00.000Z')
+  }
   
   return date.toLocaleDateString("en-US", {
     weekday: "long",
@@ -28,7 +44,11 @@ export function formatSessionDateShort(dateString: string): string {
 
 export function parseSessionDate(dateString: string): Date {
   // Parse a date string as UTC to avoid timezone issues
-  return new Date(dateString + 'T00:00:00.000Z')
+  if (dateString.includes('T')) {
+    return new Date(dateString)
+  } else {
+    return new Date(dateString + 'T00:00:00.000Z')
+  }
 }
 
 export function formatDateForInput(date: Date): string {
