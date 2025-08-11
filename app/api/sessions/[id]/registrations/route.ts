@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { sendRegistrationConfirmation } from '@/lib/email'
+import { registrationSchema, cancellationSchema, validateRequest } from '@/lib/validation'
+import { sanitizeLogData } from '@/lib/security'
 import crypto from 'crypto'
 
 export async function POST(
@@ -9,6 +11,13 @@ export async function POST(
 ) {
   try {
     const body = await request.json()
+    
+    // Validate input data
+    const validation = validateRequest(registrationSchema, body)
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
+    }
+    
     const {
       playerName,
       playerAge,
@@ -20,10 +29,10 @@ export async function POST(
       medicalInfo,
       experience,
       specialNotes,
-    } = body
+    } = validation.data
 
     const sessionId = Number(params.id)
-    console.log('Registration request for session:', sessionId, 'Player:', playerName)
+    console.log('Registration request for session:', sessionId, 'Player:', '[REDACTED]')
 
     // Check if session exists and has capacity
     const session = await prisma.session.findUnique({
@@ -118,16 +127,16 @@ export async function POST(
         cancellationUrl,
       })
       
-      console.log('Registration confirmation email sent to:', parentEmail)
+      console.log('Registration confirmation email sent successfully')
     } catch (emailError) {
-      console.error('Failed to send confirmation email:', emailError)
+      console.error('Failed to send confirmation email:', sanitizeLogData(emailError))
       // Don't fail the registration if email fails
     }
 
     console.log('Registration created successfully:', result.id)
     return NextResponse.json(result, { status: 201 })
   } catch (error) {
-    console.error('Registration error:', error)
+    console.error('Registration error:', sanitizeLogData(error))
     return NextResponse.json({ 
       error: 'Internal Server Error',
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -144,14 +153,14 @@ export async function DELETE(
     const email = searchParams.get('email')
     const playerName = searchParams.get('playerName')
     
-    if (!email || !playerName) {
-      return NextResponse.json({ 
-        error: 'Email and player name are required' 
-      }, { status: 400 })
+    // Validate input data
+    const validation = validateRequest(cancellationSchema, { email, playerName })
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
     const sessionId = Number(params.id)
-    console.log('Cancellation request for session:', sessionId, 'Email:', email, 'Player:', playerName)
+    console.log('Cancellation request for session:', sessionId)
 
     // Find the registration
     const registration = await prisma.registration.findFirst({
@@ -198,7 +207,7 @@ export async function DELETE(
       playerName: registration.playerName 
     })
   } catch (error) {
-    console.error('Cancellation error:', error)
+    console.error('Cancellation error:', sanitizeLogData(error))
     return NextResponse.json({ 
       error: 'Internal Server Error',
       details: error instanceof Error ? error.message : 'Unknown error'

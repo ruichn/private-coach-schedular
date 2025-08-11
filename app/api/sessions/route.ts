@@ -1,5 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAdminAuth } from '@/lib/auth-middleware'
+import { createSessionSchema, validateRequest } from '@/lib/validation'
+import { sanitizeLogData } from '@/lib/security'
 
 export async function GET() {
   try {
@@ -15,16 +18,27 @@ export async function GET() {
 
     return NextResponse.json(sessions)
   } catch (error) {
-    console.error(error)
+    console.error('GET sessions error:', sanitizeLogData(error))
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Require admin authentication for session creation
+  const authError = requireAdminAuth(request)
+  if (authError) {
+    return authError
+  }
+
   try {
     const body = await request.json()
-    console.log('POST session request body:', body)
     
+    // Validate input data
+    const validation = validateRequest(createSessionSchema, body)
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
+    }
+
     const {
       coachId,
       ageGroup,
@@ -36,7 +50,7 @@ export async function POST(request: Request) {
       maxParticipants,
       price,
       focus,
-    } = body
+    } = validation.data
 
     const session = await prisma.session.create({
       data: {
@@ -48,7 +62,7 @@ export async function POST(request: Request) {
         location,
         address,
         maxParticipants,
-        currentParticipants: 0, // Initialize to 0
+        currentParticipants: 0,
         price,
         focus,
       },
@@ -58,10 +72,10 @@ export async function POST(request: Request) {
       },
     })
 
-    console.log('Created session:', session.id)
+    console.log('Session created successfully:', session.id, 'by admin')
     return NextResponse.json(session, { status: 201 })
   } catch (error) {
-    console.error('POST session error:', error)
+    console.error('POST session error:', sanitizeLogData(error))
     return NextResponse.json({ 
       error: 'Internal Server Error',
       details: error instanceof Error ? error.message : 'Unknown error'

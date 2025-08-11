@@ -1,7 +1,14 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAdminAuth } from '@/lib/auth-middleware'
+import { sanitizeLogData } from '@/lib/security'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Require admin authentication for viewing all registrations
+  const authError = requireAdminAuth(request)
+  if (authError) {
+    return authError
+  }
   try {
     const registrations = await prisma.registration.findMany({
       include: {
@@ -33,7 +40,7 @@ export async function GET() {
 
     return NextResponse.json(formattedRegistrations)
   } catch (error) {
-    console.error('Error fetching registrations:', error)
+    console.error('Error fetching registrations:', sanitizeLogData(error))
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }

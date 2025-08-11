@@ -1,27 +1,68 @@
 import { NextResponse } from 'next/server'
+import { verifyPassword, generateAdminToken, checkRateLimit, sanitizeLogData } from '@/lib/security'
+import { adminLoginSchema, validateRequest } from '@/lib/validation'
 
 export async function POST(request: Request) {
+  const clientIp = request.headers.get('x-forwarded-for') || 
+                   request.headers.get('x-real-ip') || 
+                   'unknown'
+
   try {
-    const { password } = await request.json()
-    
-    if (!password) {
-      return NextResponse.json({ error: 'Password is required' }, { status: 400 })
+    // Rate limiting check
+    if (!checkRateLimit(`admin-login-${clientIp}`, 5, 15 * 60 * 1000)) {
+      console.warn(`Rate limit exceeded for admin login from IP: ${clientIp}`)
+      return NextResponse.json(
+        { error: 'Too many login attempts. Please try again later.' },
+        { status: 429 }
+      )
     }
 
-    const adminPassword = process.env.ADMIN_PASSWORD
+    const body = await request.json()
     
-    if (!adminPassword) {
-      console.error('ADMIN_PASSWORD not configured in environment variables')
+    // Validate input
+    const validation = validateRequest(adminLoginSchema, body)
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
+    }
+
+    const { password } = validation.data
+    const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH
+    
+    if (!adminPasswordHash) {
+      console.error('ADMIN_PASSWORD_HASH not configured in environment variables')
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
     }
 
-    if (password === adminPassword) {
-      return NextResponse.json({ success: true, message: 'Authentication successful' })
+    // Verify password using bcrypt
+    const isValidPassword = await verifyPassword(password, adminPasswordHash)
+    
+    if (isValidPassword) {
+      // Generate JWT token
+      const token = generateAdminToken()
+      
+      console.log('Admin login successful from IP:', clientIp)
+      
+      const response = NextResponse.json({ 
+        success: true, 
+        message: 'Authentication successful',
+        token 
+      })
+      
+      // Set HTTP-only cookie for additional security
+      response.cookies.set('admin-token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 3600 // 1 hour
+      })
+      
+      return response
     } else {
+      console.warn('Failed admin login attempt from IP:', clientIp)
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
     }
   } catch (error) {
-    console.error('Admin login error:', error)
+    console.error('Admin login error:', sanitizeLogData(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
