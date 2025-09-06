@@ -10,6 +10,7 @@ import { formatSessionDate } from "@/lib/date-utils"
 
 interface Session {
   id: number
+  sport: string
   ageGroup: string
   subgroup: string
   date: string
@@ -119,7 +120,7 @@ export default function SessionsPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="text-lg">
-                      {session.ageGroup} - {session.subgroup}
+                      {session.sport?.charAt(0).toUpperCase() + session.sport?.slice(1)} - {session.ageGroup} {session.subgroup}
                     </CardTitle>
                     <p className="text-sm text-gray-600 mt-1">{session.focus}</p>
                   </div>

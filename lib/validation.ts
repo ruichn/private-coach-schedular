@@ -8,6 +8,7 @@ export const adminLoginSchema = z.object({
 // Session creation validation
 export const createSessionSchema = z.object({
   coachId: z.number().int().positive('Coach ID must be a positive integer'),
+  sport: z.string().min(1, 'Sport is required').max(20, 'Sport name too long'),
   ageGroup: z.string().min(1, 'Age group is required').max(50, 'Age group too long'),
   subgroup: z.string().min(1, 'Subgroup is required').max(50, 'Subgroup too long'),
   date: z.string().min(1, 'Date is required').refine((val) => {

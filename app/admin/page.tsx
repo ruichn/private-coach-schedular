@@ -18,6 +18,7 @@ import { formatSessionDate, formatDateForInput } from "@/lib/date-utils"
 
 interface Session {
   id: number
+  sport: string
   ageGroup: string
   subgroup: string
   date: string
@@ -51,6 +52,7 @@ export default function AdminPage() {
   const [newLocationData, setNewLocationData] = useState({ name: '', address: '' })
   const [showLocationManager, setShowLocationManager] = useState(false)
   const [formData, setFormData] = useState({
+    sport: "",
     ageGroup: "",
     subgroup: "",
     date: "",
@@ -87,6 +89,7 @@ export default function AdminPage() {
         const data = await response.json()
         const formattedSessions = data.map((session: any) => ({
           id: session.id,
+          sport: session.sport || 'volleyball', // Default to volleyball for existing sessions
           ageGroup: session.ageGroup,
           subgroup: session.subgroup,
           date: session.date.split('T')[0], // Keep as YYYY-MM-DD for form input
@@ -151,7 +154,7 @@ export default function AdminPage() {
     e.preventDefault()
 
     // Validate required fields
-    if (!formData.ageGroup || !formData.subgroup || !formData.date || 
+    if (!formData.sport || !formData.ageGroup || !formData.subgroup || !formData.date || 
         !formData.startTime || !formData.endTime || !formData.location || 
         !formData.address || !formData.maxParticipants) {
       alert('Please fill in all required fields')
@@ -163,6 +166,7 @@ export default function AdminPage() {
 
     const sessionData = {
       coachId: 2, // Default to Coach Robe (existing coach ID)
+      sport: formData.sport,
       ageGroup: formData.ageGroup,
       subgroup: formData.subgroup,
       date: formData.date,
@@ -258,6 +262,7 @@ export default function AdminPage() {
 
   const resetForm = () => {
     setFormData({
+      sport: "",
       ageGroup: "",
       subgroup: "",
       date: "",
@@ -307,6 +312,7 @@ export default function AdminPage() {
     const [startTime, endTime] = session.time.split(' - ')
     
     setFormData({
+      sport: session.sport || "volleyball", // Default to volleyball for existing sessions
       ageGroup: session.ageGroup,
       subgroup: session.subgroup,
       date: session.date,
@@ -361,6 +367,7 @@ export default function AdminPage() {
   }
 
   const subgroupOptions = {
+    U12: ["Beginners", "Intermediate"],
     U13: ["Beginners", "Intermediate"],
     U14: ["Beginners", "Intermediate", "Advanced"],
     U15: ["Developmental", "Competitive"],
@@ -416,7 +423,20 @@ export default function AdminPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="sport">Sport *</Label>
+                    <Select value={formData.sport} onValueChange={(value) => handleSelectChange("sport", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select sport" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="volleyball">Volleyball</SelectItem>
+                        <SelectItem value="basketball">Basketball</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   <div>
                     <Label htmlFor="ageGroup">Age Group *</Label>
                     <Select value={formData.ageGroup} onValueChange={(value) => handleSelectChange("ageGroup", value)}>
@@ -424,6 +444,7 @@ export default function AdminPage() {
                         <SelectValue placeholder="Select age group" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="U12">U12</SelectItem>
                         <SelectItem value="U13">U13</SelectItem>
                         <SelectItem value="U14">U14</SelectItem>
                         <SelectItem value="U15">U15</SelectItem>
@@ -808,7 +829,7 @@ export default function AdminPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="text-lg">
-                      {session.ageGroup} - {session.subgroup}
+                      {session.sport?.charAt(0).toUpperCase() + session.sport?.slice(1)} - {session.ageGroup} {session.subgroup}
                     </CardTitle>
                     <p className="text-sm text-gray-600 mt-1">{session.focus}</p>
                   </div>

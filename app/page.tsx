@@ -10,6 +10,7 @@ import { formatSessionDateShort } from "@/lib/date-utils"
 
 interface Session {
   id: number
+  sport: string
   ageGroup: string
   subgroup: string
   date: string
@@ -38,6 +39,7 @@ export default function Home() {
         // Take first 3 sessions and format for homepage
         const formatted = sessions.slice(0, 3).map((session: any) => ({
           id: session.id,
+          sport: session.sport || 'volleyball', // Default to volleyball for existing sessions
           ageGroup: session.ageGroup,
           subgroup: session.subgroup,
           date: formatSessionDateShort(session.date),
@@ -146,7 +148,7 @@ export default function Home() {
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="text-lg">
-                          {session.ageGroup} - {session.subgroup}
+                          {session.sport?.charAt(0).toUpperCase() + session.sport?.slice(1)} - {session.ageGroup} {session.subgroup}
                         </CardTitle>
                         <CardDescription>{session.focus}</CardDescription>
                       </div>
