@@ -12,9 +12,10 @@ import { CheckCircle, UserX } from "lucide-react"
 interface SessionSignupFormProps {
   sessionId: number
   sessionPrice: number
+  onRegistrationSuccess?: () => void
 }
 
-export default function SessionSignupForm({ sessionId, sessionPrice }: SessionSignupFormProps) {
+export default function SessionSignupForm({ sessionId, sessionPrice, onRegistrationSuccess }: SessionSignupFormProps) {
   const [formData, setFormData] = useState({
     playerName: "",
     playerAge: "",
@@ -56,6 +57,8 @@ export default function SessionSignupForm({ sessionId, sessionPrice }: SessionSi
       if (response.ok) {
         setRegisteredPlayerName(formData.playerName)
         setIsSuccess(true)
+        // Notify parent component of successful registration
+        onRegistrationSuccess?.()
         // Reset form
         setFormData({
           playerName: "",
