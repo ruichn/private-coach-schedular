@@ -555,54 +555,38 @@ export default function AdminPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="location">Location *</Label>
-                    {!showNewLocationForm ? (
-                      <Select 
-                        value={formData.location || ''} 
-                        onValueChange={(value) => {
-                          if (value === 'new-location') {
-                            setShowNewLocationForm(true)
-                            setFormData(prev => ({ ...prev, location: '', address: '' }))
-                            setNewLocationData({ name: '', address: '' })
-                          } else {
-                            handleSelectChange('location', value)
-                          }
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select location or add new" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {locations.map((location) => (
-                            <SelectItem key={location.id} value={location.name}>
-                              {location.name}
-                            </SelectItem>
-                          ))}
-                          <SelectItem value="new-location">
-                            + Add New Location
+                    <Select 
+                      value={formData.location || ''} 
+                      onValueChange={(value) => {
+                        if (value === 'new-location') {
+                          setShowNewLocationForm(true)
+                          setFormData(prev => ({ ...prev, location: '', address: '' }))
+                          setNewLocationData({ name: '', address: '' })
+                        } else {
+                          handleSelectChange('location', value)
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select location or add new" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {locations.map((location) => (
+                          <SelectItem key={location.id} value={location.name}>
+                            {location.name}
                           </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center px-3 py-2 border border-input bg-gray-50 rounded-md">
-                          <span className="text-sm">
-                            {formData.location || newLocationData.name || "New location will appear here"}
-                          </span>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setShowNewLocationForm(false)
-                            setFormData(prev => ({ ...prev, location: '', address: '' }))
-                            setNewLocationData({ name: '', address: '' })
-                          }}
-                        >
-                          Change
-                        </Button>
-                      </div>
-                    )}
+                        ))}
+                        {/* Show current location as option if it's not in the saved locations */}
+                        {formData.location && !locations.some(loc => loc.name === formData.location) && (
+                          <SelectItem value={formData.location}>
+                            {formData.location} (current)
+                          </SelectItem>
+                        )}
+                        <SelectItem value="new-location">
+                          + Add New Location
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label htmlFor="address">Address *</Label>
