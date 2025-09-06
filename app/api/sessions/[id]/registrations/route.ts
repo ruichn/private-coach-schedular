@@ -82,7 +82,7 @@ export async function POST(
         data: {
           sessionId,
           playerName,
-          playerAge: playerAge ? Number(playerAge) : null,
+          playerAge: typeof playerAge === 'number' ? playerAge : null,
           parentName,
           parentEmail,
           parentPhone,
@@ -120,7 +120,7 @@ export async function POST(
         sessionLocation: session.location,
         sessionAddress: session.address,
         ageGroup: session.ageGroup,
-        subgroup: session.subgroup,
+        sport: session.sport || 'volleyball',
         focus: session.focus,
         price: session.price,
         cancellationToken,

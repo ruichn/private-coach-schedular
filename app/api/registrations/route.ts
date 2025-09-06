@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
         session: {
           select: {
             id: true,
+            sport: true,
             ageGroup: true,
-            subgroup: true,
             date: true,
             time: true,
             location: true,

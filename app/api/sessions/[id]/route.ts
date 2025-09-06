@@ -3,11 +3,12 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await prisma.session.findUnique({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       include: {
         coach: true,
         registrations: true,
@@ -27,16 +28,17 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
     console.log('PATCH request body:', body)
-    console.log('Session ID:', params.id)
+    console.log('Session ID:', id)
     
     // Get current session to preserve currentParticipants
     const currentSession = await prisma.session.findUnique({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       include: { registrations: true }
     })
 
@@ -54,7 +56,7 @@ export async function PATCH(
     console.log('Update data:', updateData)
 
     const session = await prisma.session.update({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       data: updateData,
       include: {
         coach: true,

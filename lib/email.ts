@@ -18,7 +18,7 @@ interface RegistrationEmailData {
   sessionLocation: string
   sessionAddress: string
   ageGroup: string
-  subgroup: string
+  sport: string
   focus: string
   price: number
   cancellationToken: string
@@ -35,7 +35,7 @@ export async function sendRegistrationConfirmation(data: RegistrationEmailData) 
     sessionLocation,
     sessionAddress,
     ageGroup,
-    subgroup,
+    sport,
     focus,
     price,
     cancellationToken,
@@ -52,7 +52,7 @@ export async function sendRegistrationConfirmation(data: RegistrationEmailData) 
     })
   }
 
-  const subject = `Registration Confirmed: ${playerName} - Volleyball Training Session`
+  const subject = `Registration Confirmed: ${playerName} - ${sport.charAt(0).toUpperCase() + sport.slice(1)} Training Session`
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -76,19 +76,19 @@ export async function sendRegistrationConfirmation(data: RegistrationEmailData) 
     </head>
     <body>
       <div class="header">
-        <h1>🏐 Registration Confirmed!</h1>
-        <p>Coach Robe Volleyball Training</p>
+        <h1>${sport === 'volleyball' ? '🏐' : '🏀'} Registration Confirmed!</h1>
+        <p>Coach Robe Sports Training</p>
       </div>
       
       <div class="content">
         <h2>Hi ${parentName},</h2>
         
-        <p>Thank you for registering <strong>${playerName}</strong> for the volleyball training session! We're excited to have them join us.</p>
+        <p>Thank you for registering <strong>${playerName}</strong> for the ${sport} training session! We're excited to have them join us.</p>
         
         <div class="session-details">
           <h3>📅 Session Details</h3>
           <div class="detail-row"><span class="label">Player:</span> ${playerName}</div>
-          <div class="detail-row"><span class="label">Session:</span> ${ageGroup} - ${subgroup}</div>
+          <div class="detail-row"><span class="label">Session:</span> ${sport.charAt(0).toUpperCase() + sport.slice(1)} - ${ageGroup}</div>
           <div class="detail-row"><span class="label">Focus:</span> ${focus}</div>
           <div class="detail-row"><span class="label">Date:</span> ${formatDate(sessionDate)}</div>
           <div class="detail-row"><span class="label">Time:</span> ${sessionTime}</div>
@@ -126,11 +126,11 @@ export async function sendRegistrationConfirmation(data: RegistrationEmailData) 
         
         <p>Best regards,<br>
         <strong>Coach Robe</strong><br>
-        Podio Sports Volleyball Training</p>
+        Podio Sports Training</p>
       </div>
       
       <div class="footer">
-        <p>This is an automated confirmation email for your volleyball training registration.</p>
+        <p>This is an automated confirmation email for your ${sport} training registration.</p>
         <p>Podio Sports | <a href="mailto:Robe@PodioSports.org">Robe@PodioSports.org</a></p>
       </div>
     </body>
@@ -138,15 +138,15 @@ export async function sendRegistrationConfirmation(data: RegistrationEmailData) 
   `
 
   const textContent = `
-Registration Confirmed: ${playerName} - Volleyball Training Session
+Registration Confirmed: ${playerName} - ${sport.charAt(0).toUpperCase() + sport.slice(1)} Training Session
 
 Hi ${parentName},
 
-Thank you for registering ${playerName} for the volleyball training session!
+Thank you for registering ${playerName} for the ${sport} training session!
 
 SESSION DETAILS:
 Player: ${playerName}
-Session: ${ageGroup} - ${subgroup}
+Session: ${sport.charAt(0).toUpperCase() + sport.slice(1)} - ${ageGroup}
 Focus: ${focus}
 Date: ${formatDate(sessionDate)}
 Time: ${sessionTime}
@@ -170,7 +170,7 @@ If you have any questions, contact us at Robe@PodioSports.org
 
 Best regards,
 Coach Robe
-Podio Sports Volleyball Training
+Podio Sports Training
   `
 
   try {

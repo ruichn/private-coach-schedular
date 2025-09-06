@@ -28,7 +28,11 @@ export const registrationSchema = z.object({
     .min(1, 'Player name is required')
     .max(50, 'Player name too long')
     .regex(/^[a-zA-Z\s-']+$/, 'Player name contains invalid characters'),
-  playerAge: z.number().int().min(5, 'Player must be at least 5 years old').max(25, 'Player age too high').optional(),
+  playerAge: z.union([z.string(), z.number()]).optional().transform((val) => {
+    if (val === undefined || val === null || val === '') return undefined;
+    const num = typeof val === 'string' ? Number(val) : val;
+    return isNaN(num) ? undefined : num;
+  }).refine((val) => val === undefined || (Number.isInteger(val) && val >= 5 && val <= 25), 'Player age must be between 5 and 25'),
   parentName: z.string()
     .min(1, 'Parent name is required')
     .max(50, 'Parent name too long')
