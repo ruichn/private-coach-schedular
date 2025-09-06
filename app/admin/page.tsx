@@ -577,7 +577,7 @@ export default function AdminPage() {
                           </SelectItem>
                         ))}
                         {/* Show current location as option if it's not in the saved locations */}
-                        {formData.location && !locations.some(loc => loc.name === formData.location) && (
+                        {formData.location && !locations.some(loc => loc.name === formData.location) && !showNewLocationForm && (
                           <SelectItem value={formData.location}>
                             {formData.location} (current)
                           </SelectItem>
@@ -651,13 +651,16 @@ export default function AdminPage() {
                         size="sm"
                         onClick={() => {
                           if (newLocationData.name && newLocationData.address) {
-                            // Ensure form data is properly set
+                            // Ensure form data is properly set first
                             setFormData(prev => ({ 
                               ...prev, 
                               location: newLocationData.name,
                               address: newLocationData.address
                             }))
-                            setShowNewLocationForm(false)
+                            // Close the form after a small delay to ensure state updates
+                            setTimeout(() => {
+                              setShowNewLocationForm(false)
+                            }, 10)
                             // Show confirmation
                             console.log('Location set:', newLocationData.name, newLocationData.address)
                           }
