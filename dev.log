@@ -1,0 +1,42 @@
+
+> my-v0-project@0.1.0 dev
+> next dev -H 0.0.0.0 -p 8080
+
+   ▲ Next.js 15.2.4
+   - Local:        http://localhost:8080
+   - Network:      http://0.0.0.0:8080
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 963ms
+ ✓ Compiled /api/locations in 315ms (454 modules)
+ GET /api/locations 200 in 1438ms
+Location created successfully: 1
+ POST /api/locations 201 in 252ms
+Location created successfully: 2
+ POST /api/locations 201 in 102ms
+ GET /api/locations 200 in 149ms
+ ✓ Compiled /api/sessions in 144ms (456 modules)
+Session created successfully: 14 by admin
+ POST /api/sessions 201 in 697ms
+ ○ Compiling /admin/page ...
+ ✓ Compiled /admin/page in 854ms (654 modules)
+ ✓ Compiled /_not-found in 110ms (658 modules)
+ GET /admin/page 404 in 183ms
+ ✓ Compiled in 93ms (314 modules)
+ ✓ Compiled in 53ms (311 modules)
+ ✓ Compiled in 53ms (311 modules)
+ ✓ Compiled in 87ms (311 modules)
+ ✓ Compiled in 49ms (311 modules)
+ ✓ Compiled in 43ms (311 modules)
+ ✓ Compiled in 56ms (311 modules)
+ ✓ Compiled in 49ms (311 modules)
+ ✓ Compiled in 46ms (311 modules)
+ ✓ Compiled /api/locations in 55ms (178 modules)
+ GET /api/locations 200 in 600ms
+ DELETE /api/locations?id=3 400 in 246ms
+ DELETE /api/locations?id=1 400 in 152ms
+Location created successfully: 4
+ POST /api/locations 201 in 936ms
+Location deleted successfully: Test Location to Delete
+ DELETE /api/locations?id=4 200 in 201ms

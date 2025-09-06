@@ -49,6 +49,7 @@ export default function AdminPage() {
   const [editingSession, setEditingSession] = useState<Session | null>(null)
   const [showNewLocationForm, setShowNewLocationForm] = useState(false)
   const [newLocationData, setNewLocationData] = useState({ name: '', address: '' })
+  const [showLocationManager, setShowLocationManager] = useState(false)
   const [formData, setFormData] = useState({
     ageGroup: "",
     subgroup: "",
@@ -234,6 +235,27 @@ export default function AdminPage() {
     }
   }
 
+  const deleteLocation = async (locationId: number, locationName: string) => {
+    if (confirm(`Are you sure you want to delete the location "${locationName}"? This action cannot be undone.`)) {
+      try {
+        const response = await fetch(`/api/locations?id=${locationId}`, {
+          method: 'DELETE'
+        })
+        
+        if (response.ok) {
+          await fetchLocations() // Refresh locations list
+          alert('Location deleted successfully!')
+        } else {
+          const errorData = await response.json()
+          alert(`Error deleting location: ${errorData.error || errorData.details || 'Unknown error'}`)
+        }
+      } catch (error) {
+        console.error('Error deleting location:', error)
+        alert('Error deleting location')
+      }
+    }
+  }
+
   const resetForm = () => {
     setFormData({
       ageGroup: "",
@@ -364,6 +386,10 @@ export default function AdminPage() {
             <Button variant="outline" onClick={() => setShowCreateForm(!showCreateForm)}>
               <Plus className="h-4 w-4 mr-2" />
               Create Session
+            </Button>
+            <Button variant="outline" onClick={() => setShowLocationManager(!showLocationManager)}>
+              <MapPin className="h-4 w-4 mr-2" />
+              Manage Locations
             </Button>
             <Button variant="ghost" onClick={logout} className="text-red-600 hover:text-red-700">
               Logout
@@ -558,12 +584,11 @@ export default function AdminPage() {
                       </Select>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <Input 
-                          value={formData.location} 
-                          readOnly 
-                          placeholder="New location will appear here"
-                          className="bg-gray-50"
-                        />
+                        <div className="flex items-center px-3 py-2 border border-input bg-gray-50 rounded-md">
+                          <span className="text-sm">
+                            {formData.location || newLocationData.name || "New location will appear here"}
+                          </span>
+                        </div>
                         <Button
                           type="button"
                           variant="outline"
@@ -723,6 +748,42 @@ export default function AdminPage() {
                   </Button>
                 </div>
               </form>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Location Management */}
+        {showLocationManager && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Manage Locations</CardTitle>
+              <p className="text-sm text-gray-600">Add, edit, or delete training locations</p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {locations.length === 0 ? (
+                  <p className="text-gray-500 text-center py-4">No locations found. Create a session to add your first location.</p>
+                ) : (
+                  locations.map((location) => (
+                    <div key={location.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex-1">
+                        <div className="font-medium">{location.name}</div>
+                        <div className="text-sm text-gray-500">{location.address}</div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          Last used: {new Date(location.lastUsed).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => deleteLocation(location.id, location.name)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
             </CardContent>
           </Card>
         )}
