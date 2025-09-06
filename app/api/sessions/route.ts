@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
         coachId,
         ageGroup,
         subgroup,
-        date: new Date(date),
+        date: new Date(date.includes('T') ? date : date + 'T12:00:00.000Z'),
         time,
         location,
         address,
