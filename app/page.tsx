@@ -176,7 +176,11 @@ export default function Home() {
                     </div>
                   </CardContent>
                   <CardFooter className="flex justify-between items-center">
-                    <div className="font-bold">${session.price}</div>
+                    {session.price > 0 ? (
+                      <div className="font-bold">${session.price}</div>
+                    ) : (
+                      <div></div>
+                    )}
                     <Link href={`/sessions/${session.id}/signup`}>
                       <Button>
                         Sign Up

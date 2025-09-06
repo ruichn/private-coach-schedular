@@ -153,7 +153,7 @@ export default function AdminPage() {
     // Validate required fields
     if (!formData.ageGroup || !formData.subgroup || !formData.date || 
         !formData.startTime || !formData.endTime || !formData.location || 
-        !formData.address || !formData.maxParticipants || !formData.price || !formData.focus) {
+        !formData.address || !formData.maxParticipants) {
       alert('Please fill in all required fields')
       return
     }
@@ -170,8 +170,8 @@ export default function AdminPage() {
       location: formData.location,
       address: formData.address,
       maxParticipants: Number.parseInt(formData.maxParticipants),
-      price: Number.parseFloat(formData.price),
-      focus: formData.focus,
+      price: formData.price ? Number.parseFloat(formData.price) : 0,
+      focus: formData.focus || '',
     }
     
 
@@ -555,38 +555,58 @@ export default function AdminPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="location">Location *</Label>
-                    <Select 
-                      value={formData.location || ''} 
-                      onValueChange={(value) => {
-                        if (value === 'new-location') {
-                          setShowNewLocationForm(true)
-                          setFormData(prev => ({ ...prev, location: '', address: '' }))
-                          setNewLocationData({ name: '', address: '' })
-                        } else {
-                          handleSelectChange('location', value)
-                        }
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select location or add new" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {locations.map((location) => (
-                          <SelectItem key={location.id} value={location.name}>
-                            {location.name}
-                          </SelectItem>
-                        ))}
-                        {/* Show current location as option if it's not in the saved locations */}
-                        {formData.location && !locations.some(loc => loc.name === formData.location) && !showNewLocationForm && (
-                          <SelectItem value={formData.location}>
-                            {formData.location} (current)
-                          </SelectItem>
+                    {showNewLocationForm || (formData.location && !locations.some(loc => loc.name === formData.location)) ? (
+                      <div className="flex items-center gap-2">
+                        <Input 
+                          value={formData.location || ''} 
+                          onChange={handleInputChange}
+                          name="location"
+                          placeholder="Enter location name"
+                          className="flex-1"
+                        />
+                        {!showNewLocationForm && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, location: '', address: '' }))
+                            }}
+                          >
+                            Clear
+                          </Button>
                         )}
-                        <SelectItem value="new-location">
-                          + Add New Location
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                      </div>
+                    ) : (
+                      <Select 
+                        value={formData.location || ''} 
+                        onValueChange={(value) => {
+                          if (value === 'new-location') {
+                            setShowNewLocationForm(true)
+                            setFormData(prev => ({ ...prev, location: '', address: '' }))
+                            setNewLocationData({ name: '', address: '' })
+                          } else {
+                            handleSelectChange('location', value)
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue 
+                            placeholder="Select location or add new"
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {locations.map((location) => (
+                            <SelectItem key={location.id} value={location.name}>
+                              {location.name}
+                            </SelectItem>
+                          ))}
+                          <SelectItem value="new-location">
+                            + Add New Location
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="address">Address *</Label>
@@ -651,18 +671,20 @@ export default function AdminPage() {
                         size="sm"
                         onClick={() => {
                           if (newLocationData.name && newLocationData.address) {
-                            // Ensure form data is properly set first
+                            // Set form data and close form immediately
                             setFormData(prev => ({ 
                               ...prev, 
                               location: newLocationData.name,
                               address: newLocationData.address
                             }))
-                            // Close the form after a small delay to ensure state updates
-                            setTimeout(() => {
-                              setShowNewLocationForm(false)
-                            }, 10)
-                            // Show confirmation
-                            console.log('Location set:', newLocationData.name, newLocationData.address)
+                            setShowNewLocationForm(false)
+                            // Show confirmation with more debug info
+                            console.log('Location set:', {
+                              locationName: newLocationData.name,
+                              address: newLocationData.address,
+                              existingLocations: locations.map(l => l.name),
+                              willShowAsCurrent: !locations.some(loc => loc.name === newLocationData.name)
+                            })
                           }
                         }}
                         disabled={!newLocationData.name || !newLocationData.address}
@@ -688,7 +710,7 @@ export default function AdminPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="price">Price per Player ($) *</Label>
+                    <Label htmlFor="price">Price per Player ($)</Label>
                     <Input
                       id="price"
                       name="price"
@@ -696,20 +718,18 @@ export default function AdminPage() {
                       min="0"
                       value={formData.price}
                       onChange={handleInputChange}
-                      required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="focus">Session Focus *</Label>
+                  <Label htmlFor="focus">Session Focus</Label>
                   <Input
                     id="focus"
                     name="focus"
                     placeholder="e.g., Basic Skills & Fundamentals"
                     value={formData.focus}
                     onChange={handleInputChange}
-                    required
                   />
                 </div>
 
@@ -824,7 +844,9 @@ export default function AdminPage() {
                       {session.currentParticipants}/{session.maxParticipants} players
                     </span>
                   </div>
-                  <div className="font-bold text-lg">${session.price}</div>
+                  {session.price > 0 && (
+                    <div className="font-bold text-lg">${session.price}</div>
+                  )}
                 </div>
 
                 <div className="w-full bg-gray-200 rounded-full h-2">

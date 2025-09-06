@@ -155,7 +155,9 @@ export default function SessionsPage() {
                       {session.currentParticipants}/{session.maxParticipants} players
                     </span>
                   </div>
-                  <div className="font-bold text-lg">${session.price}</div>
+                  {session.price > 0 && (
+                    <div className="font-bold text-lg">${session.price}</div>
+                  )}
                 </div>
 
                 <div className="w-full bg-gray-200 rounded-full h-2">
