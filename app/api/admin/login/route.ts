@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
     const { password } = validation.data
     const adminPasswordHashBase64 = process.env.ADMIN_PASSWORD_HASH_BASE64
-    const adminPasswordHash = adminPasswordHashBase64 ? Buffer.from(adminPasswordHashBase64, 'base64').toString('utf8') : null
+    const adminPasswordHash = adminPasswordHashBase64 ? Buffer.from(adminPasswordHashBase64, 'base64').toString('ascii') : null
     
     if (!adminPasswordHash) {
       console.error('ADMIN_PASSWORD_HASH not configured in environment variables')
