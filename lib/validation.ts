@@ -10,7 +10,6 @@ export const createSessionSchema = z.object({
   coachId: z.number().int().positive('Coach ID must be a positive integer'),
   sport: z.string().min(1, 'Sport is required').max(20, 'Sport name too long'),
   ageGroup: z.string().min(1, 'Age group is required').max(50, 'Age group too long'),
-  subgroup: z.string().min(1, 'Subgroup is required').max(50, 'Subgroup too long'),
   date: z.string().min(1, 'Date is required').refine((val) => {
     // Accept both YYYY-MM-DD and ISO datetime formats
     return /^\d{4}-\d{2}-\d{2}$/.test(val) || /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(val)

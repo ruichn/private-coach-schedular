@@ -10,7 +10,6 @@ interface SessionData {
   id: number
   sport: string
   ageGroup: string
-  subgroup: string
   date: Date
   time: string
   location: string
@@ -90,7 +89,7 @@ export default async function SessionSignup({ params }: { params: { id: string }
               <CardContent className="space-y-4">
                 <div>
                   <h3 className="font-semibold text-lg">
-                    {session.sport?.charAt(0).toUpperCase() + session.sport?.slice(1)} - {session.ageGroup} {session.subgroup}
+                    {session.sport?.charAt(0).toUpperCase() + session.sport?.slice(1)} - {session.ageGroup}
                   </h3>
                   <p className="text-gray-600">{session.focus}</p>
                 </div>

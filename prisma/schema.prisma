@@ -83,7 +83,6 @@ model Session {
   coachId           Int
   sport             String   @default("volleyball")
   ageGroup          String
-  subgroup          String
   date              DateTime
   time              String
   location          String

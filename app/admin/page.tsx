@@ -20,7 +20,6 @@ interface Session {
   id: number
   sport: string
   ageGroup: string
-  subgroup: string
   date: string
   time: string
   location: string
@@ -54,7 +53,6 @@ export default function AdminPage() {
   const [formData, setFormData] = useState({
     sport: "",
     ageGroup: "",
-    subgroup: "",
     date: "",
     startTime: "",
     endTime: "",
@@ -91,7 +89,6 @@ export default function AdminPage() {
           id: session.id,
           sport: session.sport || 'volleyball', // Default to volleyball for existing sessions
           ageGroup: session.ageGroup,
-          subgroup: session.subgroup,
           date: session.date.split('T')[0], // Keep as YYYY-MM-DD for form input
           time: session.time,
           location: session.location,
@@ -154,7 +151,7 @@ export default function AdminPage() {
     e.preventDefault()
 
     // Validate required fields
-    if (!formData.sport || !formData.ageGroup || !formData.subgroup || !formData.date || 
+    if (!formData.sport || !formData.ageGroup || !formData.date || 
         !formData.startTime || !formData.endTime || !formData.location || 
         !formData.address || !formData.maxParticipants) {
       alert('Please fill in all required fields')
@@ -168,7 +165,6 @@ export default function AdminPage() {
       coachId: 2, // Default to Coach Robe (existing coach ID)
       sport: formData.sport,
       ageGroup: formData.ageGroup,
-      subgroup: formData.subgroup,
       date: formData.date,
       time: `${convertTo12Hour(formData.startTime)} - ${convertTo12Hour(formData.endTime)}`,
       location: formData.location,
@@ -264,7 +260,6 @@ export default function AdminPage() {
     setFormData({
       sport: "",
       ageGroup: "",
-      subgroup: "",
       date: "",
       startTime: "",
       endTime: "",
@@ -314,7 +309,6 @@ export default function AdminPage() {
     setFormData({
       sport: session.sport || "volleyball", // Default to volleyball for existing sessions
       ageGroup: session.ageGroup,
-      subgroup: session.subgroup,
       date: session.date,
       startTime: convertTo24Hour(startTime),
       endTime: convertTo24Hour(endTime),
@@ -366,13 +360,6 @@ export default function AdminPage() {
     }
   }
 
-  const subgroupOptions = {
-    U12: ["Beginners", "Intermediate"],
-    U13: ["Beginners", "Intermediate"],
-    U14: ["Beginners", "Intermediate", "Advanced"],
-    U15: ["Developmental", "Competitive"],
-    U16: ["Developmental", "Competitive", "Elite"],
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -423,7 +410,7 @@ export default function AdminPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="sport">Sport *</Label>
                     <Select value={formData.sport} onValueChange={(value) => handleSelectChange("sport", value)}>
@@ -449,27 +436,6 @@ export default function AdminPage() {
                         <SelectItem value="U14">U14</SelectItem>
                         <SelectItem value="U15">U15</SelectItem>
                         <SelectItem value="U16">U16</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="subgroup">Subgroup *</Label>
-                    <Select
-                      value={formData.subgroup}
-                      onValueChange={(value) => handleSelectChange("subgroup", value)}
-                      disabled={!formData.ageGroup}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select subgroup" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {formData.ageGroup &&
-                          subgroupOptions[formData.ageGroup as keyof typeof subgroupOptions]?.map((subgroup) => (
-                            <SelectItem key={subgroup} value={subgroup}>
-                              {subgroup}
-                            </SelectItem>
-                          ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -829,7 +795,7 @@ export default function AdminPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="text-lg">
-                      {session.sport?.charAt(0).toUpperCase() + session.sport?.slice(1)} - {session.ageGroup} {session.subgroup}
+                      {session.sport?.charAt(0).toUpperCase() + session.sport?.slice(1)} - {session.ageGroup}
                     </CardTitle>
                     <p className="text-sm text-gray-600 mt-1">{session.focus}</p>
                   </div>

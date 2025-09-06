@@ -12,7 +12,6 @@ interface Session {
   id: number
   sport: string
   ageGroup: string
-  subgroup: string
   date: string
   time: string
   location: string
@@ -41,7 +40,6 @@ export default function Home() {
           id: session.id,
           sport: session.sport || 'volleyball', // Default to volleyball for existing sessions
           ageGroup: session.ageGroup,
-          subgroup: session.subgroup,
           date: formatSessionDateShort(session.date),
           time: session.time,
           location: session.location,
@@ -64,7 +62,7 @@ export default function Home() {
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="font-bold text-xl">
-            Coach Robe Volleyball
+            Coach Robe Sports Training
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             <Link href="/sessions" className="text-sm font-medium hover:text-gray-600">
@@ -93,10 +91,10 @@ export default function Home() {
       <main>
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">Elite Volleyball Training with Coach Robe</h1>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">Elite Sports Training with Coach Robe</h1>
             <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
-              Professional volleyball coaching for youth players. Specialized group training sessions organized by age
-              groups U13-U16. Develop your skills, teamwork, and competitive edge.
+              Professional volleyball and basketball coaching for youth players. Specialized group training sessions for ages 
+              U12-U16. Develop your skills, teamwork, and competitive edge in both sports.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/sessions">
@@ -148,7 +146,7 @@ export default function Home() {
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="text-lg">
-                          {session.sport?.charAt(0).toUpperCase() + session.sport?.slice(1)} - {session.ageGroup} {session.subgroup}
+                          {session.sport?.charAt(0).toUpperCase() + session.sport?.slice(1)} - {session.ageGroup}
                         </CardTitle>
                         <CardDescription>{session.focus}</CardDescription>
                       </div>
@@ -262,7 +260,7 @@ export default function Home() {
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
             <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-              Join our volleyball programs and elevate your game with expert coaching from Coach Robe.
+              Join our volleyball and basketball programs and elevate your game with expert coaching from Coach Robe.
             </p>
             <Link href="/sessions">
               <Button size="lg">Find Your Training Today</Button>
@@ -275,8 +273,8 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="font-bold text-lg mb-4">Coach Robe Volleyball</h3>
-              <p className="text-gray-400">Professional volleyball training for youth athletes in the New York area.</p>
+              <h3 className="font-bold text-lg mb-4">Coach Robe Sports Training</h3>
+              <p className="text-gray-400">Professional volleyball and basketball training for youth athletes in the New York area.</p>
             </div>
             <div>
               <h4 className="font-bold mb-4">Quick Links</h4>
@@ -355,7 +353,7 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; {new Date().getFullYear()} Coach Robe Volleyball. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Coach Robe Sports Training. All rights reserved.</p>
           </div>
         </div>
       </footer>
