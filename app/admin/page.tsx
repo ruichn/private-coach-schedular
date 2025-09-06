@@ -31,21 +31,32 @@ interface Session {
   status: string
 }
 
+interface Location {
+  id: number
+  name: string
+  address: string
+  createdAt: string
+  lastUsed: string
+}
+
 export default function AdminPage() {
   const router = useRouter()
   const { isAuthenticated, logout } = useAdminAuth()
   const [sessions, setSessions] = useState<Session[]>([])
+  const [locations, setLocations] = useState<Location[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingSession, setEditingSession] = useState<Session | null>(null)
+  const [showNewLocationForm, setShowNewLocationForm] = useState(false)
+  const [newLocationData, setNewLocationData] = useState({ name: '', address: '' })
   const [formData, setFormData] = useState({
     ageGroup: "",
     subgroup: "",
     date: "",
     startTime: "",
     endTime: "",
-    location: "The Overlake School Gym",
-    address: "20301 NE 108th St, Redmond, WA 98053",
+    location: "",
+    address: "",
     maxParticipants: "",
     price: "",
     focus: "",
@@ -60,10 +71,11 @@ export default function AdminPage() {
     }
   }, [router])
 
-  // Fetch sessions from API
+  // Fetch sessions and locations from API
   useEffect(() => {
     if (isAdminAuthenticated()) {
       fetchSessions()
+      fetchLocations()
     }
   }, [])
 
@@ -96,6 +108,18 @@ export default function AdminPage() {
     }
   }
 
+  const fetchLocations = async () => {
+    try {
+      const response = await fetch('/api/locations')
+      if (response.ok) {
+        const data = await response.json()
+        setLocations(data)
+      }
+    } catch (error) {
+      console.error('Error fetching locations:', error)
+    }
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({
@@ -109,6 +133,17 @@ export default function AdminPage() {
       ...prev,
       [name]: value,
     }))
+    
+    // Auto-fill address when location is selected
+    if (name === 'location' && value !== 'new-location') {
+      const selectedLocation = locations.find(loc => loc.name === value)
+      if (selectedLocation) {
+        setFormData((prev) => ({
+          ...prev,
+          address: selectedLocation.address
+        }))
+      }
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -121,6 +156,9 @@ export default function AdminPage() {
       alert('Please fill in all required fields')
       return
     }
+
+    // Save location if it's new and doesn't exist
+    await saveLocationIfNew(formData.location, formData.address)
 
     const sessionData = {
       coachId: 2, // Default to Coach Robe (existing coach ID)
@@ -156,8 +194,10 @@ export default function AdminPage() {
 
       if (response.ok) {
         await fetchSessions() // Refresh the sessions list
+        await fetchLocations() // Refresh locations list
         setShowCreateForm(false)
         setEditingSession(null)
+        setShowNewLocationForm(false)
         resetForm()
         alert(editingSession ? "Session updated successfully!" : "Session created successfully!")
       } else {
@@ -171,6 +211,29 @@ export default function AdminPage() {
     }
   }
 
+  const saveLocationIfNew = async (locationName: string, address: string) => {
+    // Check if location already exists
+    const existingLocation = locations.find(loc => 
+      loc.name.toLowerCase() === locationName.toLowerCase()
+    )
+    
+    if (!existingLocation && locationName && address) {
+      try {
+        const response = await fetch('/api/locations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: locationName, address }),
+        })
+        
+        if (response.ok) {
+          console.log('New location saved:', locationName)
+        }
+      } catch (error) {
+        console.error('Error saving location:', error)
+      }
+    }
+  }
+
   const resetForm = () => {
     setFormData({
       ageGroup: "",
@@ -178,13 +241,15 @@ export default function AdminPage() {
       date: "",
       startTime: "",
       endTime: "",
-      location: "The Overlake School Gym",
-      address: "20301 NE 108th St, Redmond, WA 98053",
+      location: "",
+      address: "",
       maxParticipants: "",
       price: "",
       focus: "",
       notes: "",
     })
+    setNewLocationData({ name: '', address: '' })
+    setShowNewLocationForm(false)
   }
 
   const deleteSession = async (id: number) => {
@@ -463,28 +528,106 @@ export default function AdminPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="location">Location Name</Label>
-                    <Input
-                      id="location"
-                      name="location"
-                      value={formData.location}
-                      readOnly
-                      className="bg-gray-100 cursor-not-allowed"
-                    />
-                    <p className="text-sm text-gray-500 mt-1">All training sessions are held at The Overlake School</p>
+                    <Label htmlFor="location">Location *</Label>
+                    <Select 
+                      value={formData.location} 
+                      onValueChange={(value) => {
+                        if (value === 'new-location') {
+                          setShowNewLocationForm(true)
+                          setFormData(prev => ({ ...prev, location: '', address: '' }))
+                        } else {
+                          handleSelectChange('location', value)
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select location or add new" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {locations.map((location) => (
+                          <SelectItem key={location.id} value={location.name}>
+                            {location.name}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="new-location">
+                          + Add New Location
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
-                    <Label htmlFor="address">Address</Label>
+                    <Label htmlFor="address">Address *</Label>
                     <Input
                       id="address"
                       name="address"
                       value={formData.address}
-                      readOnly
-                      className="bg-gray-100 cursor-not-allowed"
+                      onChange={handleInputChange}
+                      placeholder="Enter address"
+                      required
                     />
-                    <p className="text-sm text-gray-500 mt-1">Fixed training location</p>
                   </div>
                 </div>
+
+                {/* New Location Form */}
+                {showNewLocationForm && (
+                  <div className="bg-blue-50 p-4 rounded-lg border">
+                    <h4 className="font-semibold mb-3 text-blue-800">Add New Location</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="newLocationName">Location Name *</Label>
+                        <Input
+                          id="newLocationName"
+                          value={newLocationData.name}
+                          onChange={(e) => {
+                            setNewLocationData(prev => ({ ...prev, name: e.target.value }))
+                            setFormData(prev => ({ ...prev, location: e.target.value }))
+                          }}
+                          placeholder="Enter location name"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="newLocationAddress">Address *</Label>
+                        <Input
+                          id="newLocationAddress"
+                          value={newLocationData.address}
+                          onChange={(e) => {
+                            setNewLocationData(prev => ({ ...prev, address: e.target.value }))
+                            setFormData(prev => ({ ...prev, address: e.target.value }))
+                          }}
+                          placeholder="Enter full address"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setShowNewLocationForm(false)
+                          setFormData(prev => ({ ...prev, location: '', address: '' }))
+                          setNewLocationData({ name: '', address: '' })
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="button" 
+                        size="sm"
+                        onClick={() => {
+                          if (newLocationData.name && newLocationData.address) {
+                            setShowNewLocationForm(false)
+                          }
+                        }}
+                        disabled={!newLocationData.name || !newLocationData.address}
+                      >
+                        Use This Location
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>

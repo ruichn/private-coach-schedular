@@ -131,3 +131,11 @@ model User {
   name      String?
   bookings  Booking[]
 }
+
+model Location {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  address     String
+  createdAt   DateTime @default(now())
+  lastUsed    DateTime @default(now())
+}
