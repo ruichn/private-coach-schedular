@@ -529,31 +529,55 @@ export default function AdminPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="location">Location *</Label>
-                    <Select 
-                      value={formData.location} 
-                      onValueChange={(value) => {
-                        if (value === 'new-location') {
-                          setShowNewLocationForm(true)
-                          setFormData(prev => ({ ...prev, location: '', address: '' }))
-                        } else {
-                          handleSelectChange('location', value)
-                        }
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select location or add new" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {locations.map((location) => (
-                          <SelectItem key={location.id} value={location.name}>
-                            {location.name}
+                    {!showNewLocationForm ? (
+                      <Select 
+                        value={formData.location || ''} 
+                        onValueChange={(value) => {
+                          if (value === 'new-location') {
+                            setShowNewLocationForm(true)
+                            setFormData(prev => ({ ...prev, location: '', address: '' }))
+                            setNewLocationData({ name: '', address: '' })
+                          } else {
+                            handleSelectChange('location', value)
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select location or add new" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {locations.map((location) => (
+                            <SelectItem key={location.id} value={location.name}>
+                              {location.name}
+                            </SelectItem>
+                          ))}
+                          <SelectItem value="new-location">
+                            + Add New Location
                           </SelectItem>
-                        ))}
-                        <SelectItem value="new-location">
-                          + Add New Location
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Input 
+                          value={formData.location} 
+                          readOnly 
+                          placeholder="New location will appear here"
+                          className="bg-gray-50"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setShowNewLocationForm(false)
+                            setFormData(prev => ({ ...prev, location: '', address: '' }))
+                            setNewLocationData({ name: '', address: '' })
+                          }}
+                        >
+                          Change
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="address">Address *</Label>
@@ -618,7 +642,15 @@ export default function AdminPage() {
                         size="sm"
                         onClick={() => {
                           if (newLocationData.name && newLocationData.address) {
+                            // Ensure form data is properly set
+                            setFormData(prev => ({ 
+                              ...prev, 
+                              location: newLocationData.name,
+                              address: newLocationData.address
+                            }))
                             setShowNewLocationForm(false)
+                            // Show confirmation
+                            console.log('Location set:', newLocationData.name, newLocationData.address)
                           }
                         }}
                         disabled={!newLocationData.name || !newLocationData.address}
