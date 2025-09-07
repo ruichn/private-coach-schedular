@@ -182,6 +182,7 @@ export default function AdminPage() {
         response = await fetch(`/api/sessions/${editingSession.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(sessionData),
         })
       } else {
@@ -189,6 +190,7 @@ export default function AdminPage() {
         response = await fetch('/api/sessions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(sessionData),
         })
       }
@@ -223,6 +225,7 @@ export default function AdminPage() {
         const response = await fetch('/api/locations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ name: locationName, address }),
         })
         
@@ -240,7 +243,8 @@ export default function AdminPage() {
     if (confirm(`Are you sure you want to delete the location "${locationName}"? This action cannot be undone.`)) {
       try {
         const response = await fetch(`/api/locations?id=${locationId}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          credentials: 'include'
         })
         
         if (response.ok) {
@@ -281,6 +285,7 @@ export default function AdminPage() {
         console.log('Deleting session:', id)
         const response = await fetch(`/api/sessions/${id}`, {
           method: 'DELETE',
+          credentials: 'include',
         })
         
         console.log('Delete response status:', response.status)

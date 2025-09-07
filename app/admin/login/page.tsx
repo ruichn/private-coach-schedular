@@ -28,6 +28,7 @@ export default function AdminLoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ password }),
       })
 
@@ -36,6 +37,7 @@ export default function AdminLoginPage() {
       if (response.ok) {
         // Store authentication in session storage
         sessionStorage.setItem('admin-authenticated', 'true')
+        // Token is automatically set as HTTP-only cookie by the server
         router.push('/admin')
       } else {
         setError(data.error || 'Invalid password')
