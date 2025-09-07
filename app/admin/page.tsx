@@ -228,6 +228,7 @@ export default function AdminPage() {
         
         if (response.ok) {
           console.log('New location saved:', locationName)
+          await fetchLocations() // Refresh locations list immediately
         }
       } catch (error) {
         console.error('Error saving location:', error)
