@@ -269,14 +269,18 @@ export default function SessionSignupForm({ sessionId, sessionPrice, onRegistrat
       </div>
 
       <div className="pt-6 border-t">
-        <div className="flex justify-between items-center mb-4">
-          <span className="text-lg font-semibold">Session Fee:</span>
-          <span className="text-2xl font-bold">${sessionPrice}</span>
-        </div>
-        <p className="text-sm text-gray-600 mb-4">
-          Payment will be collected at the session. Please bring exact change or be prepared to pay via
-          Venmo/Zelle.
-        </p>
+        {sessionPrice > 0 && (
+          <>
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-lg font-semibold">Session Fee:</span>
+              <span className="text-2xl font-bold">${sessionPrice}</span>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              Payment will be collected at the session. Please bring exact change or be prepared to pay via
+              Venmo/Zelle.
+            </p>
+          </>
+        )}
         <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
           {isSubmitting ? "Registering..." : "Register for Session"}
         </Button>

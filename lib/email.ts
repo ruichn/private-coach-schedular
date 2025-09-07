@@ -94,14 +94,14 @@ export async function sendRegistrationConfirmation(data: RegistrationEmailData) 
           <div class="detail-row"><span class="label">Time:</span> ${sessionTime}</div>
           <div class="detail-row"><span class="label">Location:</span> ${sessionLocation}</div>
           <div class="detail-row"><span class="label">Address:</span> ${sessionAddress}</div>
-          <div class="detail-row"><span class="label">Session Fee:</span> $${price}</div>
+          ${price > 0 ? `<div class="detail-row"><span class="label">Session Fee:</span> $${price}</div>` : ''}
         </div>
         
         <div class="important-info">
           <h3>📋 Important Information</h3>
           <ul>
             <li><strong>Arrival:</strong> Please arrive 10-15 minutes before the session starts</li>
-            <li><strong>Payment:</strong> Session fee will be collected at the training session (cash, Venmo, or Zelle)</li>
+            ${price > 0 ? '<li><strong>Payment:</strong> Session fee will be collected at the training session (cash, Venmo, or Zelle)</li>' : ''}
             <li><strong>What to bring:</strong> Water bottle, comfortable athletic wear, and court shoes</li>
             <li><strong>Contact:</strong> Coach Robe will be available 15 minutes before the session for any questions</li>
           </ul>
@@ -152,11 +152,11 @@ Date: ${formatDate(sessionDate)}
 Time: ${sessionTime}
 Location: ${sessionLocation}
 Address: ${sessionAddress}
-Session Fee: $${price}
+${price > 0 ? `Session Fee: $${price}` : ''}
 
 IMPORTANT INFORMATION:
 - Please arrive 10-15 minutes before the session starts
-- Payment will be collected at the session (cash, Venmo, or Zelle)
+${price > 0 ? '- Payment will be collected at the session (cash, Venmo, or Zelle)' : ''}
 - Bring: Water bottle, athletic wear, and court shoes
 - Coach Robe will be available 15 minutes early for questions
 
