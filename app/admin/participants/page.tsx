@@ -94,15 +94,32 @@ export default function ParticipantsPage() {
       if (sessionsResponse.ok) {
         const sessionsData = await sessionsResponse.json()
         setSessions(sessionsData)
-      }
 
-      // Fetch all registrations for all-participants view
-      const registrationsResponse = await fetch('/api/registrations', {
-        credentials: 'include'
-      })
-      if (registrationsResponse.ok) {
-        const registrationsData = await registrationsResponse.json()
-        setAllRegistrations(registrationsData)
+        // Extract all registrations from sessions data for all-participants view
+        const allRegistrationsFromSessions: Registration[] = []
+        sessionsData.forEach((session: SessionWithRegistrations) => {
+          if (session.registrations) {
+            session.registrations.forEach((reg: BaseRegistration) => {
+              allRegistrationsFromSessions.push({
+                ...reg,
+                session: {
+                  id: session.id,
+                  sport: session.sport,
+                  ageGroup: session.ageGroup,
+                  date: session.date,
+                  time: session.time,
+                  location: session.location,
+                  address: session.address,
+                  focus: session.focus,
+                  price: session.price,
+                  maxParticipants: session.maxParticipants
+                }
+              })
+            })
+          }
+        })
+        console.log('Extracted registrations from sessions:', allRegistrationsFromSessions.length, 'registrations')
+        setAllRegistrations(allRegistrationsFromSessions)
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -210,6 +227,8 @@ export default function ParticipantsPage() {
 
     return matchesSearch && matchesSport && matchesDate
   })
+
+  console.log('All registrations:', allRegistrations.length, 'Filtered registrations:', filteredRegistrations.length, 'View mode:', viewMode)
 
   const exportAllData = () => {
     if (viewMode === 'by-session') {
@@ -386,7 +405,7 @@ ${'─'.repeat(40)}`
           <CardContent className="pt-6">
             <div className="flex items-center gap-4 mb-4">
               <span className="text-sm font-medium text-gray-700">View:</span>
-              <div className="flex bg-gray-100 rounded-lg p-1">
+              <div className="flex bg-gray-100 rounded-lg p-1 gap-2">
                 <Button
                   variant={viewMode === 'by-session' ? 'default' : 'ghost'}
                   size="sm"

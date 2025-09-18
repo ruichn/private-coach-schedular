@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Calendar, Clock, MapPin, Users, Plus, Edit, Trash2, Eye, EyeOff, UserCheck, X, Mail, Phone, FileText, Download } from "lucide-react"
+import { Calendar, Clock, MapPin, Users, Plus, Edit, Trash2, Eye, EyeOff, UserCheck, X, Mail, Phone, FileText, Download, Share2 } from "lucide-react"
 import { formatSessionDate, formatDateForInput } from "@/lib/date-utils"
 
 interface Session {
@@ -31,6 +31,7 @@ interface Session {
   focus: string
   status: string
   isVisible: boolean
+  playerNames: string[]
 }
 
 
@@ -94,6 +95,7 @@ export default function AdminPage() {
           focus: session.focus,
           status: session.registrations.length >= session.maxParticipants ? 'full' : 'open',
           isVisible: session.isVisible !== undefined ? session.isVisible : true, // Default to visible for existing sessions
+          playerNames: session.registrations.map((reg: any) => reg.playerName),
         }))
         setSessions(formattedSessions)
       }
@@ -121,6 +123,35 @@ export default function AdminPage() {
     } catch (error) {
       console.error('Error fetching session players:', error)
       alert('Error fetching player list')
+    }
+  }
+
+  const shareSession = (session: Session) => {
+    const sessionInfo = `🏐 ${session.sport?.charAt(0).toUpperCase() + session.sport?.slice(1)} Training - ${session.ageGroup}
+
+📅 Date: ${formatSessionDate(session.date)}
+⏰ Time: ${session.time}
+📍 Location: ${session.location}
+📍 Address: ${session.address}
+
+👥 Registered Players (${session.playerNames.length}/${session.maxParticipants}):
+${session.playerNames.length > 0 ? session.playerNames.map((name, index) => `${index + 1}. ${name}`).join('\n') : 'No players registered yet'}
+
+${session.price > 0 ? `💰 Price: $${session.price}` : '🆓 Free session'}
+
+Register at: ${window.location.origin}/sessions/${session.id}/signup`
+
+    if (navigator.share) {
+      navigator.share({
+        title: `${session.sport?.charAt(0).toUpperCase() + session.sport?.slice(1)} Training - ${session.ageGroup}`,
+        text: sessionInfo,
+      }).catch(console.error)
+    } else {
+      navigator.clipboard.writeText(sessionInfo).then(() => {
+        alert('Session information copied to clipboard!')
+      }).catch(() => {
+        alert('Unable to copy to clipboard. Please copy manually:\n\n' + sessionInfo)
+      })
     }
   }
 
@@ -776,16 +807,44 @@ export default function AdminPage() {
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <div className="flex items-center gap-2">
-                      <CardTitle className="text-lg">
-                        {session.sport?.charAt(0).toUpperCase() + session.sport?.slice(1)} - {session.ageGroup}
-                      </CardTitle>
-                      {!session.isVisible && (
-                        <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full">
-                          <EyeOff className="h-3 w-3 text-gray-500" />
-                          <span className="text-xs text-gray-500">Hidden</span>
-                        </div>
-                      )}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-lg">
+                          {session.sport?.charAt(0).toUpperCase() + session.sport?.slice(1)} - {session.ageGroup}
+                        </CardTitle>
+                        {!session.isVisible && (
+                          <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full">
+                            <EyeOff className="h-3 w-3 text-gray-500" />
+                            <span className="text-xs text-gray-500">Hidden</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="bg-transparent p-2"
+                          onClick={() => shareSession(session)}
+                        >
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="bg-transparent p-2"
+                          onClick={() => editSession(session)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 hover:text-red-700 bg-transparent p-2"
+                          onClick={() => deleteSession(session.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                     <p className="text-sm text-gray-600 mt-1">{session.focus}</p>
                   </div>
@@ -841,35 +900,19 @@ export default function AdminPage() {
                   ></div>
                 </div>
 
-                <div className="flex gap-2 pt-2">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="flex-1 bg-transparent"
-                    onClick={() => editSession(session)}
-                  >
-                    <Edit className="h-4 w-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1 bg-transparent"
-                    onClick={() => fetchSessionPlayers(session.id)}
-                  >
-                    <UserCheck className="h-4 w-4 mr-1" />
-                    Players
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1 text-red-600 hover:text-red-700 bg-transparent"
-                    onClick={() => deleteSession(session.id)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Delete
-                  </Button>
-                </div>
+                {session.playerNames && session.playerNames.length > 0 && (
+                  <div className="text-xs text-gray-600">
+                    <div className="font-medium mb-1">Registered Players:</div>
+                    <div className="flex flex-wrap gap-1">
+                      {session.playerNames.map((name, index) => (
+                        <span key={index} className="bg-gray-100 px-2 py-1 rounded text-xs">
+                          {name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
               </CardContent>
             </Card>
             ))}
