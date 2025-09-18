@@ -54,8 +54,9 @@ async function getCoach(id: string): Promise<Coach> {
   }
 }
 
-export default async function CoachProfile({ params }: { params: { id: string } }) {
-  const coach: Coach = await getCoach(params.id);
+export default async function CoachProfile({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const coach: Coach = await getCoach(id);
 
   if (!coach) {
     return <div>Coach not found</div>

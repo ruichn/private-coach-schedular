@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { CheckCircle, UserX } from "lucide-react"
+import { CheckCircle, UserX, AlertTriangle, ArrowLeft } from "lucide-react"
 
 interface SessionSignupFormProps {
   sessionId: number
@@ -32,18 +32,62 @@ export default function SessionSignupForm({ sessionId, sessionPrice, onRegistrat
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [registeredPlayerName, setRegisteredPlayerName] = useState("")
+  const [duplicateError, setDuplicateError] = useState<string>("")
+
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-numeric characters
+    const numbers = value.replace(/\D/g, '')
+    
+    // Apply formatting
+    if (numbers.length <= 3) {
+      return numbers
+    } else if (numbers.length <= 6) {
+      return `(${numbers.slice(0, 3)}) ${numbers.slice(3)}`
+    } else {
+      return `(${numbers.slice(0, 3)}) ${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`
+    }
+  }
+
+  const validatePhoneNumber = (phone: string) => {
+    const numbers = phone.replace(/\D/g, '')
+    return numbers.length === 10
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+    
+    // Format phone numbers as user types
+    if (name === 'parentPhone' || name === 'emergencyPhone') {
+      const formatted = formatPhoneNumber(value)
+      setFormData((prev) => ({
+        ...prev,
+        [name]: formatted,
+      }))
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }))
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setDuplicateError("") // Clear any previous errors
+
+    // Validate phone numbers
+    if (!validatePhoneNumber(formData.parentPhone)) {
+      alert('Please enter a valid 10-digit phone number for parent/guardian')
+      setIsSubmitting(false)
+      return
+    }
+
+    if (formData.emergencyPhone && !validatePhoneNumber(formData.emergencyPhone)) {
+      alert('Please enter a valid 10-digit emergency phone number or leave it empty')
+      setIsSubmitting(false)
+      return
+    }
 
     try {
       const response = await fetch(`/api/sessions/${sessionId}/registrations`, {
@@ -74,7 +118,13 @@ export default function SessionSignupForm({ sessionId, sessionPrice, onRegistrat
         })
       } else {
         const error = await response.json()
-        alert(`Registration failed: ${error.error}`)
+        
+        // Handle duplicate registration with special UI
+        if (error.isDuplicate) {
+          setDuplicateError(error.error)
+        } else {
+          alert(`Registration failed: ${error.error}`)
+        }
       }
     } catch (error) {
       console.error('Registration error:', error)
@@ -114,6 +164,50 @@ export default function SessionSignupForm({ sessionId, sessionPrice, onRegistrat
             <Link href="/sessions">
               <Button variant="outline">View More Sessions</Button>
             </Link>
+            <Link href="/cancel">
+              <Button variant="outline">
+                <UserX className="h-4 w-4 mr-2" />
+                Cancel Registration
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (duplicateError) {
+    return (
+      <div className="text-center py-8">
+        <div className="bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+          <AlertTriangle className="h-8 w-8 text-yellow-600" />
+        </div>
+        <h3 className="text-lg font-semibold mb-2 text-yellow-800">Already Registered!</h3>
+        <p className="text-gray-700 mb-6 max-w-md mx-auto">
+          {duplicateError}
+        </p>
+        
+        <div className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
+            <p className="text-sm text-blue-800 mb-2">
+              <strong>Need to make changes?</strong>
+            </p>
+            <ul className="text-sm text-blue-700 space-y-1 text-left">
+              <li>• Check your email for the confirmation with cancellation link</li>
+              <li>• Contact Coach Robe directly for assistance</li>
+              <li>• Use the cancellation form if you need to re-register</li>
+            </ul>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              variant="outline" 
+              onClick={() => setDuplicateError("")}
+              className="flex items-center"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Try Different Details
+            </Button>
             <Link href="/cancel">
               <Button variant="outline">
                 <UserX className="h-4 w-4 mr-2" />
@@ -205,8 +299,10 @@ export default function SessionSignupForm({ sessionId, sessionPrice, onRegistrat
               type="tel"
               value={formData.parentPhone}
               onChange={handleInputChange}
+              placeholder="(123) 456-7890"
               required
             />
+            <p className="text-xs text-gray-500 mt-1">Format: (123) 456-7890</p>
           </div>
         </div>
       </div>
@@ -235,8 +331,9 @@ export default function SessionSignupForm({ sessionId, sessionPrice, onRegistrat
               type="tel"
               value={formData.emergencyPhone}
               onChange={handleInputChange}
-              placeholder="Optional"
+              placeholder="(123) 456-7890"
             />
+            <p className="text-xs text-gray-500 mt-1">Format: (123) 456-7890</p>
           </div>
         </div>
       </div>

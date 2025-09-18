@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendCancellationSMS } from '@/lib/sms'
 
 export async function GET(
   request: Request,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const { token } = params
+    const { token } = await params
     
     if (!token) {
       return NextResponse.json({ error: 'Cancellation token is required' }, { status: 400 })
@@ -115,12 +116,27 @@ export async function DELETE(
 
     console.log('Registration cancelled via token:', registration.id, 'Player:', registration.playerName)
     
+    // Send cancellation SMS
+    try {
+      await sendCancellationSMS({
+        playerName: registration.playerName,
+        parentPhone: registration.parentPhone,
+        sessionDate: registration.session.date.toISOString(),
+        sessionTime: registration.session.time,
+        sport: registration.session.sport || 'volleyball'
+      })
+      console.log('Cancellation SMS sent successfully')
+    } catch (smsError) {
+      console.error('Failed to send cancellation SMS:', smsError)
+      // Don't fail the cancellation if SMS fails
+    }
+    
     return NextResponse.json({ 
       message: 'Registration cancelled successfully',
       playerName: registration.playerName,
       sessionDetails: {
         ageGroup: registration.session.ageGroup,
-        subgroup: registration.session.subgroup,
+        sport: registration.session.sport || 'volleyball',
         date: registration.session.date.toISOString().split('T')[0],
         time: registration.session.time
       }

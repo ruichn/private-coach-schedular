@@ -3,11 +3,12 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const coach = await prisma.coach.findUnique({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       include: {
         experience: true,
         certifications: true,

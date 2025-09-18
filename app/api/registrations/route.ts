@@ -20,7 +20,10 @@ export async function GET(request: NextRequest) {
             date: true,
             time: true,
             location: true,
+            address: true,
             focus: true,
+            price: true,
+            maxParticipants: true,
           }
         }
       },

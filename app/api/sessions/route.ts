@@ -4,9 +4,22 @@ import { requireAdminAuth } from '@/lib/auth-middleware'
 import { createSessionSchema, validateRequest } from '@/lib/validation'
 import { sanitizeLogData } from '@/lib/security'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const includeHidden = searchParams.get('includeHidden') === 'true'
+    
+    // For admin requests, include hidden sessions
+    // For public requests, only show visible and future sessions
+    const where = includeHidden ? {} : {
+      isVisible: true,
+      date: {
+        gte: new Date(new Date().setHours(0, 0, 0, 0)) // Today or later
+      }
+    }
+
     const sessions = await prisma.session.findMany({
+      where,
       include: {
         coach: true,
         registrations: true,
@@ -41,6 +54,7 @@ export async function POST(request: NextRequest) {
 
     const {
       coachId,
+      sport,
       ageGroup,
       subgroup,
       date,
@@ -50,11 +64,13 @@ export async function POST(request: NextRequest) {
       maxParticipants,
       price,
       focus,
+      isVisible,
     } = validation.data
 
     const session = await prisma.session.create({
       data: {
         coachId,
+        sport: sport || 'volleyball', // Default to volleyball
         ageGroup,
         subgroup,
         date: new Date(date.includes('T') ? date : date + 'T12:00:00.000Z'),
@@ -65,6 +81,7 @@ export async function POST(request: NextRequest) {
         currentParticipants: 0,
         price,
         focus,
+        isVisible: isVisible !== undefined ? isVisible : true, // Default to visible
       },
       include: {
         coach: true,

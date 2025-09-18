@@ -92,6 +92,7 @@ model Session {
   price             Float
   focus             String
   status            String   @default("open")
+  isVisible         Boolean  @default(true)
   registrations     Registration[]
 }
 

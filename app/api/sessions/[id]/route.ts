@@ -76,10 +76,11 @@ export async function PATCH(
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const sessionId = Number(params.id)
+    const { id } = await params
+    const sessionId = Number(id)
     console.log('Deleting session:', sessionId)
 
     // First delete all registrations for this session

@@ -8,453 +8,218 @@
    - Environments: .env
 
  ✓ Starting...
- ✓ Ready in 963ms
- ✓ Compiled /api/locations in 315ms (454 modules)
- GET /api/locations 200 in 1438ms
-Location created successfully: 1
- POST /api/locations 201 in 252ms
-Location created successfully: 2
- POST /api/locations 201 in 102ms
- GET /api/locations 200 in 149ms
- ✓ Compiled /api/sessions in 144ms (456 modules)
-Session created successfully: 14 by admin
- POST /api/sessions 201 in 697ms
- ○ Compiling /admin/page ...
- ✓ Compiled /admin/page in 854ms (654 modules)
- ✓ Compiled /_not-found in 110ms (658 modules)
- GET /admin/page 404 in 183ms
- ✓ Compiled in 93ms (314 modules)
- ✓ Compiled in 53ms (311 modules)
- ✓ Compiled in 53ms (311 modules)
- ✓ Compiled in 87ms (311 modules)
- ✓ Compiled in 49ms (311 modules)
- ✓ Compiled in 43ms (311 modules)
- ✓ Compiled in 56ms (311 modules)
- ✓ Compiled in 49ms (311 modules)
- ✓ Compiled in 46ms (311 modules)
- ✓ Compiled /api/locations in 55ms (178 modules)
- GET /api/locations 200 in 600ms
- DELETE /api/locations?id=3 400 in 246ms
- DELETE /api/locations?id=1 400 in 152ms
-Location created successfully: 4
- POST /api/locations 201 in 936ms
-Location deleted successfully: Test Location to Delete
- DELETE /api/locations?id=4 200 in 201ms
- ✓ Compiled in 110ms (311 modules)
- ✓ Compiled in 108ms (311 modules)
- ✓ Compiled in 100ms (311 modules)
- ✓ Compiled in 48ms (311 modules)
- ✓ Compiled in 104ms (311 modules)
- ✓ Compiled in 49ms (311 modules)
- ✓ Compiled in 44ms (311 modules)
- ○ Compiling /admin ...
- ✓ Compiled /admin in 612ms (910 modules)
- GET /admin 200 in 741ms
- ✓ Compiled in 207ms (924 modules)
- ✓ Compiled in 86ms (426 modules)
- ✓ Compiled /admin in 88ms (498 modules)
- GET /admin 200 in 221ms
- ✓ Compiled /admin/login in 110ms (927 modules)
- GET /admin/login 200 in 138ms
- ✓ Compiled /api/admin/login in 201ms (951 modules)
-Admin login successful from IP: 127.0.0.1
- POST /api/admin/login 200 in 467ms
- ✓ Compiled /admin in 40ms (618 modules)
- GET /admin 200 in 84ms
- ✓ Compiled /api/sessions in 73ms (623 modules)
- ✓ Compiled (625 modules)
- GET /api/sessions 200 in 759ms
- GET /api/locations 200 in 771ms
- GET /api/locations 200 in 46ms
- GET /api/sessions 200 in 117ms
- ✓ Compiled in 290ms (941 modules)
- GET /admin 200 in 144ms
- ✓ Compiled /api/locations in 89ms (621 modules)
- GET /api/locations 200 in 294ms
- ✓ Compiled /api/sessions in 46ms (623 modules)
-Token verification failed: Error [TokenExpiredError]: jwt expired
-    at verifyAdminToken (lib/security.ts:34:20)
-    at requireAdminAuth (lib/auth-middleware.ts:15:35)
-    at POST (app/api/sessions/route.ts:28:37)
-  32 | export function verifyAdminToken(token: string): AdminSession | null {
-  33 |   try {
-> 34 |     const decoded = jwt.verify(token, JWT_SECRET) as AdminSession
-     |                    ^
-  35 |     return decoded
-  36 |   } catch (error) {
-  37 |     console.error('Token verification failed:', error) {
-  expiredAt: 2025-09-06T04:16:35.000Z,
-  constructor: [Function: TokenExpiredError]
-}
- POST /api/sessions 401 in 124ms
- ✓ Compiled /api/admin/login in 78ms (625 modules)
-Admin login successful from IP: 127.0.0.1
- POST /api/admin/login 200 in 306ms
-Session created successfully: 15 by admin
- POST /api/sessions 201 in 571ms
- GET /admin 200 in 99ms
- GET /admin/login 200 in 12ms
-Admin login successful from IP: 127.0.0.1
- POST /api/admin/login 200 in 198ms
- GET /admin 200 in 5ms
- GET /api/sessions 200 in 288ms
- GET /api/locations 200 in 468ms
- GET /api/sessions 200 in 181ms
- GET /api/locations 200 in 70ms
-Location created successfully: 6
- POST /api/locations 201 in 2731ms
- ✓ Compiled /api/sessions/[id] in 153ms (1042 modules)
-PATCH request body: {
-  coachId: 2,
-  ageGroup: 'U15',
-  subgroup: 'Developmental',
-  date: '2025-09-25',
-  time: '3:00 PM - 4:30 PM',
-  location: 'test',
-  address: 'asdfd',
-  maxParticipants: 10,
-  price: 35,
-  focus: 'Testing custom location functionality'
-}
-Error: Route "/api/sessions/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at PATCH (app/api/sessions/[id]/route.ts:35:38)
-  33 |     const body = await request.json()
-  34 |     console.log('PATCH request body:', body)
-> 35 |     console.log('Session ID:', params.id)
-     |                                      ^
-  36 |     
-  37 |     // Get current session to preserve currentParticipants
-  38 |     const currentSession = await prisma.session.findUnique({
-Session ID: 15
-Error: Route "/api/sessions/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at PATCH (app/api/sessions/[id]/route.ts:39:33)
-  37 |     // Get current session to preserve currentParticipants
-  38 |     const currentSession = await prisma.session.findUnique({
-> 39 |       where: { id: Number(params.id) },
-     |                                 ^
-  40 |       include: { registrations: true }
-  41 |     })
-  42 |
- POST /api/locations 200 in 497ms
-PATCH request body: {
-  coachId: 2,
-  ageGroup: 'U15',
-  subgroup: 'Developmental',
-  date: '2025-09-25',
-  time: '3:00 PM - 4:30 PM',
-  location: 'test',
-  address: 'asdfd',
-  maxParticipants: 10,
-  price: 35,
-  focus: 'Testing custom location functionality'
-}
-Error: Route "/api/sessions/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at PATCH (app/api/sessions/[id]/route.ts:35:38)
-  33 |     const body = await request.json()
-  34 |     console.log('PATCH request body:', body)
-> 35 |     console.log('Session ID:', params.id)
-     |                                      ^
-  36 |     
-  37 |     // Get current session to preserve currentParticipants
-  38 |     const currentSession = await prisma.session.findUnique({
-Session ID: 15
-Error: Route "/api/sessions/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at PATCH (app/api/sessions/[id]/route.ts:39:33)
-  37 |     // Get current session to preserve currentParticipants
-  38 |     const currentSession = await prisma.session.findUnique({
-> 39 |       where: { id: Number(params.id) },
-     |                                 ^
-  40 |       include: { registrations: true }
-  41 |     })
-  42 |
-Update data: {
-  coachId: 2,
-  ageGroup: 'U15',
-  subgroup: 'Developmental',
-  date: 2025-09-25T00:00:00.000Z,
-  time: '3:00 PM - 4:30 PM',
-  location: 'test',
-  address: 'asdfd',
-  maxParticipants: 10,
-  price: 35,
-  focus: 'Testing custom location functionality',
-  currentParticipants: 0
-}
-Error: Route "/api/sessions/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at PATCH (app/api/sessions/[id]/route.ts:57:33)
-  55 |
-  56 |     const session = await prisma.session.update({
-> 57 |       where: { id: Number(params.id) },
-     |                                 ^
-  58 |       data: updateData,
-  59 |       include: {
-  60 |         coach: true,
-Update data: {
-  coachId: 2,
-  ageGroup: 'U15',
-  subgroup: 'Developmental',
-  date: 2025-09-25T00:00:00.000Z,
-  time: '3:00 PM - 4:30 PM',
-  location: 'test',
-  address: 'asdfd',
-  maxParticipants: 10,
-  price: 35,
-  focus: 'Testing custom location functionality',
-  currentParticipants: 0
-}
-Error: Route "/api/sessions/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at PATCH (app/api/sessions/[id]/route.ts:57:33)
-  55 |
-  56 |     const session = await prisma.session.update({
-> 57 |       where: { id: Number(params.id) },
-     |                                 ^
-  58 |       data: updateData,
-  59 |       include: {
-  60 |         coach: true,
- PATCH /api/sessions/15 200 in 614ms
- ✓ Compiled /api/sessions in 41ms (625 modules)
- GET /api/sessions 200 in 280ms
- GET /api/locations 200 in 91ms
- POST /api/locations 200 in 536ms
- PATCH /api/sessions/15 200 in 3823ms
-PATCH request body: {
-  coachId: 2,
-  ageGroup: 'U15',
-  subgroup: 'Developmental',
-  date: '2025-09-25',
-  time: '3:00 PM - 4:30 PM',
-  location: 'test',
-  address: 'asdfd',
-  maxParticipants: 10,
-  price: 35,
-  focus: 'Testing custom location functionality'
-}
-Error: Route "/api/sessions/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at PATCH (app/api/sessions/[id]/route.ts:35:38)
-  33 |     const body = await request.json()
-  34 |     console.log('PATCH request body:', body)
-> 35 |     console.log('Session ID:', params.id)
-     |                                      ^
-  36 |     
-  37 |     // Get current session to preserve currentParticipants
-  38 |     const currentSession = await prisma.session.findUnique({
-Session ID: 15
-Error: Route "/api/sessions/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at PATCH (app/api/sessions/[id]/route.ts:39:33)
-  37 |     // Get current session to preserve currentParticipants
-  38 |     const currentSession = await prisma.session.findUnique({
-> 39 |       where: { id: Number(params.id) },
-     |                                 ^
-  40 |       include: { registrations: true }
-  41 |     })
-  42 |
-Update data: {
-  coachId: 2,
-  ageGroup: 'U15',
-  subgroup: 'Developmental',
-  date: 2025-09-25T00:00:00.000Z,
-  time: '3:00 PM - 4:30 PM',
-  location: 'test',
-  address: 'asdfd',
-  maxParticipants: 10,
-  price: 35,
-  focus: 'Testing custom location functionality',
-  currentParticipants: 0
-}
-Error: Route "/api/sessions/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at PATCH (app/api/sessions/[id]/route.ts:57:33)
-  55 |
-  56 |     const session = await prisma.session.update({
-> 57 |       where: { id: Number(params.id) },
-     |                                 ^
-  58 |       data: updateData,
-  59 |       include: {
-  60 |         coach: true,
- PATCH /api/sessions/15 200 in 847ms
- GET /api/sessions 200 in 3011ms
- GET /api/locations 200 in 81ms
- GET /api/sessions 200 in 248ms
- GET /api/locations 200 in 261ms
- ✓ Compiled in 191ms (941 modules)
- GET /admin 200 in 69ms
- ✓ Compiled in 54ms (433 modules)
- GET /admin 200 in 27ms
- ✓ Compiled in 48ms (433 modules)
- GET /admin 200 in 7ms
- ✓ Compiled / in 239ms (938 modules)
- GET / 200 in 278ms
- ✓ Compiled /api/sessions in 50ms (628 modules)
- GET /api/sessions 200 in 671ms
- GET /api/sessions 200 in 745ms
- GET /admin 200 in 24ms
- ✓ Compiled /api/locations in 46ms (630 modules)
- GET /api/locations 200 in 182ms
- GET /api/locations 200 in 47ms
- GET /api/sessions 200 in 470ms
- GET /api/sessions 200 in 859ms
-Location created successfully: 7
- POST /api/locations 201 in 458ms
- ✓ Compiled /api/sessions/[id] in 83ms (632 modules)
-PATCH request body: {
-  coachId: 2,
-  ageGroup: 'U15',
-  subgroup: 'Developmental',
-  date: '2025-09-25',
-  time: '3:00 PM - 4:30 PM',
-  location: 'asdf',
-  address: 'da',
-  maxParticipants: 10,
-  price: 35,
-  focus: 'Testing custom location functionality'
-}
-Session ID: 15
- GET /admin 200 in 39ms
-Update data: {
-  coachId: 2,
-  ageGroup: 'U15',
-  subgroup: 'Developmental',
-  date: 2025-09-25T00:00:00.000Z,
-  time: '3:00 PM - 4:30 PM',
-  location: 'asdf',
-  address: 'da',
-  maxParticipants: 10,
-  price: 35,
-  focus: 'Testing custom location functionality',
-  currentParticipants: 0
-}
- PATCH /api/sessions/15 200 in 1493ms
- GET /api/sessions 200 in 791ms
- GET /api/locations 200 in 259ms
-Location deleted successfully: test
- DELETE /api/locations?id=6 200 in 1665ms
- GET /api/locations 200 in 92ms
-Error: Route "/api/sessions/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at DELETE (app/api/sessions/[id]/route.ts:82:36)
-  80 | ) {
-  81 |   try {
-> 82 |     const sessionId = Number(params.id)
+ ✓ Ready in 880ms
+ ○ Compiling / ...
+ ✓ Compiled / in 754ms (760 modules)
+ GET / 200 in 910ms
+ ✓ Compiled in 190ms (340 modules)
+ ✓ Compiled in 43ms (340 modules)
+ ✓ Compiled in 72ms (340 modules)
+ GET / 200 in 65ms
+ ✓ Compiled /api/sessions in 242ms (860 modules)
+ GET /api/sessions 200 in 1168ms
+ ✓ Compiled /sessions/[id]/signup in 262ms (895 modules)
+Error: Route "/sessions/[id]/signup" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at SessionSignup (app/sessions/[id]/signup/page.tsx:38:42)
+  36 |
+  37 | export default async function SessionSignup({ params }: { params: { id: string } }) {
+> 38 |   const session = await getSession(params.id)
+     |                                          ^
+  39 |
+  40 |   if (!session) {
+  41 |     return <div>Session not found</div>
+ GET /sessions/14/signup 200 in 752ms
+ ○ Compiling /api/sessions/[id]/registrations ...
+ ✓ Compiled /api/sessions/[id]/registrations in 1094ms (1729 modules)
+Error: Route "/api/sessions/[id]/registrations" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/sessions/[id]/registrations/route.ts:35:36)
+  33 |     } = validation.data
+  34 |
+> 35 |     const sessionId = Number(params.id)
      |                                    ^
-  83 |     console.log('Deleting session:', sessionId)
-  84 |
-  85 |     // First delete all registrations for this session
-Deleting session: 15
-Session deleted successfully
- DELETE /api/sessions/15 200 in 1291ms
- GET /api/sessions 200 in 396ms
-Location deleted successfully: asdf
- DELETE /api/locations?id=7 200 in 361ms
- GET /api/locations 200 in 100ms
- ✓ Compiled in 225ms (1058 modules)
- GET /admin 200 in 27ms
- ✓ Compiled in 292ms (945 modules)
- GET /admin 200 in 61ms
- ✓ Compiled in 149ms (945 modules)
- GET /admin 200 in 57ms
- ✓ Compiled in 164ms (945 modules)
- GET /admin 200 in 30ms
- ✓ Compiled in 137ms (945 modules)
- GET /admin 200 in 24ms
- ✓ Compiled in 154ms (945 modules)
- GET /admin 200 in 27ms
- ✓ Compiled in 172ms (945 modules)
- GET /admin 200 in 43ms
- ✓ Compiled / in 200ms (515 modules)
- GET / 200 in 243ms
- ⨯ TypeError: __webpack_modules__[moduleId] is not a function
-    at Object.__webpack_require__ [as require] (.next/server/webpack-runtime.js:33:42)
-    at JSON.parse (<anonymous>)
-    at JSON.parse (<anonymous>) {
-  digest: '1647636425'
-}
-TypeError: __webpack_modules__[moduleId] is not a function
-    at Object.__webpack_require__ [as require] (.next/server/webpack-runtime.js:33:42)
-    at JSON.parse (<anonymous>)
-    at JSON.parse (<anonymous>)
- ⨯ TypeError: __webpack_modules__[moduleId] is not a function
-    at Object.__webpack_require__ [as require] (.next/server/webpack-runtime.js:33:42)
-    at JSON.parse (<anonymous>)
-    at JSON.parse (<anonymous>) {
-  page: '/'
-}
- ⚠ Fast Refresh had to perform a full reload due to a runtime error.
- GET / 500 in 706ms
- ○ Compiling /_error ...
- ✓ Compiled /_error in 509ms (1267 modules)
- GET / 200 in 297ms
- GET / 200 in 258ms
- ✓ Compiled /_not-found in 190ms (1271 modules)
- GET /_next/static/css/app/layout.css?v=1757133556153 404 in 252ms
- GET /_next/static/chunks/main-app.js?v=1757133556153 404 in 223ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 26ms
- GET /_next/static/chunks/app/page.js 404 in 26ms
- GET / 200 in 53ms
- GET /_next/static/css/app/layout.css?v=1757133558538 404 in 14ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 33ms
- GET /_next/static/chunks/app/page.js 404 in 34ms
- GET /_next/static/chunks/main-app.js?v=1757133558538 404 in 34ms
- GET /admin 200 in 41ms
- GET /_next/static/css/app/layout.css?v=1757133561802 404 in 12ms
- GET /_next/static/chunks/main-app.js?v=1757133561802 404 in 24ms
- GET /_next/static/chunks/app/admin/page.js 404 in 23ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 24ms
- GET /admin 200 in 12ms
- GET /_next/static/css/app/layout.css?v=1757133564391 404 in 12ms
- GET /_next/static/chunks/app/admin/page.js 404 in 25ms
- GET /_next/static/chunks/main-app.js?v=1757133564391 404 in 27ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 26ms
- GET / 200 in 29ms
- GET /_next/static/css/app/layout.css?v=1757133567959 404 in 18ms
- GET /_next/static/chunks/app/page.js 404 in 36ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 36ms
- GET /_next/static/chunks/main-app.js?v=1757133567959 404 in 37ms
- GET /admin 200 in 18ms
- GET /_next/static/css/app/layout.css?v=1757133573558 404 in 16ms
- GET /_next/static/chunks/main-app.js?v=1757133573558 404 in 36ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 36ms
- GET /_next/static/chunks/app/admin/page.js 404 in 35ms
- GET / 200 in 27ms
- GET /_next/static/css/app/layout.css?v=1757133585545 404 in 14ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 35ms
- GET /_next/static/chunks/main-app.js?v=1757133585545 404 in 35ms
- GET /_next/static/chunks/app/page.js 404 in 35ms
- GET / 200 in 28ms
- GET /_next/static/css/app/layout.css?v=1757133587475 404 in 15ms
- GET /_next/static/chunks/main-app.js?v=1757133587475 404 in 35ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 34ms
- GET /_next/static/chunks/app/page.js 404 in 34ms
- ✓ Compiled /api/sessions in 208ms (674 modules)
-Token verification failed: Error [JsonWebTokenError]: jwt malformed
-    at verifyAdminToken (lib/security.ts:34:20)
-    at requireAdminAuth (lib/auth-middleware.ts:15:35)
-    at POST (app/api/sessions/route.ts:28:37)
-  32 | export function verifyAdminToken(token: string): AdminSession | null {
-  33 |   try {
-> 34 |     const decoded = jwt.verify(token, JWT_SECRET) as AdminSession
-     |                    ^
-  35 |     return decoded
-  36 |   } catch (error) {
-  37 |     console.error('Token verification failed:', error) {
-  constructor: [Function: JsonWebTokenError]
-}
- POST /api/sessions 401 in 304ms
- GET /admin 200 in 114ms
- GET /_next/static/css/app/layout.css?v=1757133672943 404 in 17ms
- GET /_next/static/chunks/app/admin/page.js 404 in 39ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 40ms
- GET /_next/static/chunks/main-app.js?v=1757133672943 404 in 40ms
- GET /admin 200 in 17ms
- GET /_next/static/css/app/layout.css?v=1757133686870 404 in 14ms
- GET /_next/static/chunks/main-app.js?v=1757133686870 404 in 34ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 33ms
- GET /_next/static/chunks/app/admin/page.js 404 in 33ms
- GET /admin 200 in 25ms
- GET /_next/static/css/app/layout.css?v=1757133700606 404 in 17ms
- GET /_next/static/chunks/main-app.js?v=1757133700606 404 in 36ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 36ms
- GET /_next/static/chunks/app/admin/page.js 404 in 37ms
- GET /admin 200 in 26ms
- GET /_next/static/css/app/layout.css?v=1757133710873 404 in 17ms
- GET /_next/static/chunks/app/admin/page.js 404 in 37ms
- GET /_next/static/chunks/main-app.js?v=1757133710873 404 in 38ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 38ms
-[?25h
+  36 |     console.log('Registration request for session:', sessionId, 'Player:', '[REDACTED]')
+  37 |
+  38 |     // Check if session exists and has capacity
+Registration request for session: 14 Player: [REDACTED]
+Registration confirmation email sent to chnrui@gmail.com
+Registration confirmation email sent successfully
+Failed to send confirmation SMS: {}
+Registration created successfully: 13
+ POST /api/sessions/14/registrations 201 in 4058ms
+ ✓ Compiled /api/sessions/[id] in 150ms (1731 modules)
+ GET /api/sessions/14 200 in 503ms
+Error: Route "/sessions/[id]/signup" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at SessionSignup (app/sessions/[id]/signup/page.tsx:38:42)
+  36 |
+  37 | export default async function SessionSignup({ params }: { params: { id: string } }) {
+> 38 |   const session = await getSession(params.id)
+     |                                          ^
+  39 |
+  40 |   if (!session) {
+  41 |     return <div>Session not found</div>
+ GET /sessions/14/signup 200 in 220ms
+ ✓ Compiled in 465ms (798 modules)
+Error: Route "/sessions/[id]/signup" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at SessionSignup (app/sessions/[id]/signup/page.tsx:38:42)
+  36 |
+  37 | export default async function SessionSignup({ params }: { params: { id: string } }) {
+> 38 |   const session = await getSession(params.id)
+     |                                          ^
+  39 |
+  40 |   if (!session) {
+  41 |     return <div>Session not found</div>
+ GET /sessions/14/signup 200 in 738ms
+ ✓ Compiled in 118ms (798 modules)
+Error: Route "/sessions/[id]/signup" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at SessionSignup (app/sessions/[id]/signup/page.tsx:38:42)
+  36 |
+  37 | export default async function SessionSignup({ params }: { params: { id: string } }) {
+> 38 |   const session = await getSession(params.id)
+     |                                          ^
+  39 |
+  40 |   if (!session) {
+  41 |     return <div>Session not found</div>
+ GET /sessions/14/signup 200 in 118ms
+ ✓ Compiled in 308ms (798 modules)
+Error: Route "/sessions/[id]/signup" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at SessionSignup (app/sessions/[id]/signup/page.tsx:38:42)
+  36 |
+  37 | export default async function SessionSignup({ params }: { params: { id: string } }) {
+> 38 |   const session = await getSession(params.id)
+     |                                          ^
+  39 |
+  40 |   if (!session) {
+  41 |     return <div>Session not found</div>
+ GET /sessions/14/signup 200 in 171ms
+ ✓ Compiled in 145ms (798 modules)
+Error: Route "/sessions/[id]/signup" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at SessionSignup (app/sessions/[id]/signup/page.tsx:38:42)
+  36 |
+  37 | export default async function SessionSignup({ params }: { params: { id: string } }) {
+> 38 |   const session = await getSession(params.id)
+     |                                          ^
+  39 |
+  40 |   if (!session) {
+  41 |     return <div>Session not found</div>
+ GET /sessions/14/signup 200 in 131ms
+ ✓ Compiled in 272ms (798 modules)
+ GET /sessions/14/signup 200 in 284ms
+ ✓ Compiled in 57ms (353 modules)
+ GET /sessions/14/signup 200 in 301ms
+ ✓ Compiled in 48ms (353 modules)
+ GET /sessions/14/signup 200 in 111ms
+ ✓ Compiled in 138ms (353 modules)
+ ✓ Compiled in 60ms (353 modules)
+ ✓ Compiled in 52ms (353 modules)
+ ✓ Compiled in 66ms (353 modules)
+ ✓ Compiled in 55ms (353 modules)
+ ✓ Compiled in 54ms (353 modules)
+ ✓ Compiled in 64ms (353 modules)
+   Reload env: .env
+ ✓ Compiled in 150ms (784 modules)
+ ✓ Compiled in 63ms (353 modules)
+ ✓ Compiled in 73ms (353 modules)
+ ✓ Compiled in 45ms (353 modules)
+ ✓ Compiled in 74ms (353 modules)
+ ✓ Compiled in 156ms (353 modules)
+ ✓ Compiled in 67ms (353 modules)
+ ✓ Compiled in 67ms (353 modules)
+ ✓ Compiled in 64ms (353 modules)
+ ✓ Compiled in 51ms (353 modules)
+ ✓ Compiled in 54ms (353 modules)
+ ✓ Compiled in 52ms (353 modules)
+ ✓ Compiled in 48ms (353 modules)
+ ✓ Compiled in 50ms (353 modules)
+ ✓ Compiled in 55ms (353 modules)
+ ✓ Compiled in 40ms (353 modules)
+ ✓ Compiled in 37ms (353 modules)
+ ✓ Compiled in 50ms (353 modules)
+ ✓ Compiled in 43ms (353 modules)
+ ✓ Compiled in 44ms (353 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/ruichen/Projects/private-coach-schedular/.next/cache/webpack/client-development/1.pack.gz_' -> '/Users/ruichen/Projects/private-coach-schedular/.next/cache/webpack/client-development/1.pack.gz'
+ ✓ Compiled in 159ms (353 modules)
+ ✓ Compiled in 52ms (353 modules)
+ ✓ Compiled in 45ms (353 modules)
+ ✓ Compiled in 362ms (798 modules)
+ ✓ Compiled in 135ms (798 modules)
+ ✓ Compiled in 115ms (798 modules)
+ ✓ Compiled in 92ms (798 modules)
+ ✓ Compiled in 124ms (798 modules)
+ ✓ Compiled in 175ms (802 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/ruichen/Projects/private-coach-schedular/.next/cache/webpack/client-development/1.pack.gz_' -> '/Users/ruichen/Projects/private-coach-schedular/.next/cache/webpack/client-development/1.pack.gz'
+ ✓ Compiled in 150ms (355 modules)
+ ✓ Compiled in 55ms (355 modules)
+ ✓ Compiled in 58ms (355 modules)
+ ✓ Compiled in 49ms (355 modules)
+ ✓ Compiled in 48ms (355 modules)
+ ✓ Compiled in 58ms (355 modules)
+ ✓ Compiled in 83ms (355 modules)
+ ✓ Compiled in 120ms (788 modules)
+ ✓ Compiled in 63ms (355 modules)
+ ✓ Compiled in 51ms (355 modules)
+ ✓ Compiled in 43ms (355 modules)
+ ✓ Compiled in 56ms (355 modules)
+ ✓ Compiled in 124ms (355 modules)
+ ✓ Compiled in 55ms (355 modules)
+ ✓ Compiled in 100ms (355 modules)
+ ✓ Compiled in 92ms (355 modules)
+ ✓ Compiled in 64ms (788 modules)
+ ✓ Compiled in 55ms (355 modules)
+ ✓ Compiled in 45ms (355 modules)
+ ✓ Compiled in 71ms (355 modules)
+ ✓ Compiled in 43ms (355 modules)
+ ✓ Compiled in 92ms (355 modules)
+ ✓ Compiled in 106ms (355 modules)
+ ✓ Compiled in 95ms (355 modules)
+ ✓ Compiled in 92ms (355 modules)
+ ✓ Compiled in 53ms (355 modules)
+ ✓ Compiled in 103ms (355 modules)
+ ✓ Compiled in 79ms (788 modules)
+ ✓ Compiled in 47ms (355 modules)
+ ✓ Compiled in 53ms (355 modules)
+ ✓ Compiled in 51ms (355 modules)
+ ✓ Compiled in 55ms (355 modules)
+ ✓ Compiled in 49ms (355 modules)
+ ✓ Compiled in 52ms (355 modules)
+ ✓ Compiled in 61ms (355 modules)
+ ✓ Compiled in 51ms (355 modules)
+ ✓ Compiled in 45ms (355 modules)
+ ✓ Compiled in 59ms (355 modules)
+ ✓ Compiled in 57ms (355 modules)
+ ✓ Compiled in 94ms (355 modules)
+ ✓ Compiled in 62ms (355 modules)
+ ✓ Compiled in 53ms (355 modules)
+ ✓ Compiled in 48ms (355 modules)
+ ✓ Compiled in 53ms (355 modules)
+ ✓ Compiled in 50ms (355 modules)
+ ✓ Compiled in 51ms (355 modules)
+ ✓ Compiled in 122ms (355 modules)
+ ✓ Compiled in 57ms (355 modules)
+ ✓ Compiled in 54ms (355 modules)
+ ✓ Compiled in 71ms (355 modules)
+ ✓ Compiled in 55ms (355 modules)
+ ✓ Compiled in 68ms (355 modules)
+ ✓ Compiled in 124ms (355 modules)
+ ✓ Compiled in 57ms (355 modules)
+ ✓ Compiled in 51ms (355 modules)
+ ✓ Compiled in 63ms (355 modules)
+ ✓ Compiled in 49ms (355 modules)
+ ✓ Compiled in 46ms (355 modules)
+ ✓ Compiled in 66ms (355 modules)
+ ✓ Compiled in 99ms (355 modules)
+ ✓ Compiled in 64ms (355 modules)
+ ✓ Compiled in 60ms (355 modules)
+ ✓ Compiled in 49ms (355 modules)
+ ✓ Compiled in 75ms (355 modules)
+ ✓ Compiled in 91ms (355 modules)
+ ✓ Compiled in 85ms (355 modules)
+ ✓ Compiled in 87ms (355 modules)
+ ✓ Compiled in 75ms (355 modules)
+ ✓ Compiled in 121ms (355 modules)
+ ✓ Compiled in 317ms (355 modules)
+ ✓ Compiled in 79ms (355 modules)
+ ✓ Compiled in 52ms (355 modules)
+ ✓ Compiled in 61ms (355 modules)
+ ✓ Compiled in 51ms (355 modules)
+ ✓ Compiled in 44ms (355 modules)
+ ✓ Compiled in 47ms (355 modules)

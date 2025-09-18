@@ -13,7 +13,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, MapPin, Users, Plus, Edit, Trash2 } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Calendar, Clock, MapPin, Users, Plus, Edit, Trash2, Eye, EyeOff, UserCheck, X, Mail, Phone, FileText, Download } from "lucide-react"
 import { formatSessionDate, formatDateForInput } from "@/lib/date-utils"
 
 interface Session {
@@ -29,27 +30,21 @@ interface Session {
   price: number
   focus: string
   status: string
+  isVisible: boolean
 }
 
-interface Location {
-  id: number
-  name: string
-  address: string
-  createdAt: string
-  lastUsed: string
-}
 
 export default function AdminPage() {
   const router = useRouter()
   const { isAuthenticated, logout } = useAdminAuth()
   const [sessions, setSessions] = useState<Session[]>([])
-  const [locations, setLocations] = useState<Location[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingSession, setEditingSession] = useState<Session | null>(null)
   const [showNewLocationForm, setShowNewLocationForm] = useState(false)
   const [newLocationData, setNewLocationData] = useState({ name: '', address: '' })
-  const [showLocationManager, setShowLocationManager] = useState(false)
+  const [selectedSessionPlayers, setSelectedSessionPlayers] = useState<any>(null)
+  const [showPlayersList, setShowPlayersList] = useState(false)
   const [formData, setFormData] = useState({
     sport: "",
     ageGroup: "",
@@ -62,6 +57,7 @@ export default function AdminPage() {
     price: "",
     focus: "",
     notes: "",
+    isVisible: true,
   })
 
   // Check authentication on component mount
@@ -76,13 +72,12 @@ export default function AdminPage() {
   useEffect(() => {
     if (isAdminAuthenticated()) {
       fetchSessions()
-      fetchLocations()
     }
   }, [])
 
   const fetchSessions = async () => {
     try {
-      const response = await fetch('/api/sessions')
+      const response = await fetch('/api/sessions?includeHidden=true')
       if (response.ok) {
         const data = await response.json()
         const formattedSessions = data.map((session: any) => ({
@@ -98,6 +93,7 @@ export default function AdminPage() {
           price: session.price,
           focus: session.focus,
           status: session.registrations.length >= session.maxParticipants ? 'full' : 'open',
+          isVisible: session.isVisible !== undefined ? session.isVisible : true, // Default to visible for existing sessions
         }))
         setSessions(formattedSessions)
       }
@@ -109,15 +105,22 @@ export default function AdminPage() {
     }
   }
 
-  const fetchLocations = async () => {
+
+  const fetchSessionPlayers = async (sessionId: number) => {
     try {
-      const response = await fetch('/api/locations')
+      const response = await fetch(`/api/sessions/${sessionId}`, {
+        credentials: 'include'
+      })
       if (response.ok) {
         const data = await response.json()
-        setLocations(data)
+        setSelectedSessionPlayers(data)
+        setShowPlayersList(true)
+      } else {
+        alert('Error fetching player list')
       }
     } catch (error) {
-      console.error('Error fetching locations:', error)
+      console.error('Error fetching session players:', error)
+      alert('Error fetching player list')
     }
   }
 
@@ -172,6 +175,7 @@ export default function AdminPage() {
       maxParticipants: Number.parseInt(formData.maxParticipants),
       price: formData.price ? Number.parseFloat(formData.price) : 0,
       focus: formData.focus || '',
+      isVisible: formData.isVisible,
     }
     
 
@@ -197,7 +201,6 @@ export default function AdminPage() {
 
       if (response.ok) {
         await fetchSessions() // Refresh the sessions list
-        await fetchLocations() // Refresh locations list
         setShowCreateForm(false)
         setEditingSession(null)
         setShowNewLocationForm(false)
@@ -231,7 +234,6 @@ export default function AdminPage() {
         
         if (response.ok) {
           console.log('New location saved:', locationName)
-          await fetchLocations() // Refresh locations list immediately
         }
       } catch (error) {
         console.error('Error saving location:', error)
@@ -239,27 +241,6 @@ export default function AdminPage() {
     }
   }
 
-  const deleteLocation = async (locationId: number, locationName: string) => {
-    if (confirm(`Are you sure you want to delete the location "${locationName}"? This action cannot be undone.`)) {
-      try {
-        const response = await fetch(`/api/locations?id=${locationId}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        })
-        
-        if (response.ok) {
-          await fetchLocations() // Refresh locations list
-          alert('Location deleted successfully!')
-        } else {
-          const errorData = await response.json()
-          alert(`Error deleting location: ${errorData.error || errorData.details || 'Unknown error'}`)
-        }
-      } catch (error) {
-        console.error('Error deleting location:', error)
-        alert('Error deleting location')
-      }
-    }
-  }
 
   const resetForm = () => {
     setFormData({
@@ -274,6 +255,7 @@ export default function AdminPage() {
       price: "",
       focus: "",
       notes: "",
+      isVisible: true,
     })
     setNewLocationData({ name: '', address: '' })
     setShowNewLocationForm(false)
@@ -324,6 +306,7 @@ export default function AdminPage() {
       price: session.price.toString(),
       focus: session.focus,
       notes: "",
+      isVisible: session.isVisible,
     })
   }
 
@@ -375,21 +358,20 @@ export default function AdminPage() {
             Coach Robe Admin
           </Link>
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="/sessions" className="text-sm font-medium hover:text-gray-600">
-              View Sessions
-            </Link>
+            <span className="text-sm font-medium text-blue-600">
+              Sessions
+            </span>
             <Link href="/admin/participants" className="text-sm font-medium hover:text-gray-600">
               Participants
+            </Link>
+            <Link href="/admin/locations" className="text-sm font-medium hover:text-gray-600">
+              Locations
             </Link>
           </nav>
           <div className="flex items-center gap-4">
             <Button variant="outline" onClick={() => setShowCreateForm(!showCreateForm)}>
               <Plus className="h-4 w-4 mr-2" />
               Create Session
-            </Button>
-            <Button variant="outline" onClick={() => setShowLocationManager(!showLocationManager)}>
-              <MapPin className="h-4 w-4 mr-2" />
-              Manage Locations
             </Button>
             <Button variant="ghost" onClick={logout} className="text-red-600 hover:text-red-700">
               Logout
@@ -737,6 +719,35 @@ export default function AdminPage() {
                   />
                 </div>
 
+                <div className="flex items-center space-x-2 p-4 border rounded-lg bg-blue-50">
+                  <Checkbox
+                    id="isVisible"
+                    checked={formData.isVisible}
+                    onCheckedChange={(checked) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        isVisible: checked === true
+                      }))
+                    }}
+                  />
+                  <div className="flex items-center space-x-2">
+                    {formData.isVisible ? (
+                      <Eye className="h-4 w-4 text-blue-600" />
+                    ) : (
+                      <EyeOff className="h-4 w-4 text-gray-500" />
+                    )}
+                    <Label htmlFor="isVisible" className="text-sm font-medium cursor-pointer">
+                      {formData.isVisible ? 'Visible to users' : 'Hidden from users'}
+                    </Label>
+                  </div>
+                  <p className="text-xs text-gray-600 ml-2">
+                    {formData.isVisible 
+                      ? 'Session will appear in the upcoming training sessions list'
+                      : 'Session will be hidden from users but visible to admin'
+                    }
+                  </p>
+                </div>
+
                 <div className="flex gap-4">
                   <Button type="submit">{editingSession ? 'Update Session' : 'Create Session'}</Button>
                   <Button type="button" variant="outline" onClick={() => {
@@ -752,41 +763,6 @@ export default function AdminPage() {
           </Card>
         )}
 
-        {/* Location Management */}
-        {showLocationManager && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Manage Locations</CardTitle>
-              <p className="text-sm text-gray-600">Add, edit, or delete training locations</p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {locations.length === 0 ? (
-                  <p className="text-gray-500 text-center py-4">No locations found. Create a session to add your first location.</p>
-                ) : (
-                  locations.map((location) => (
-                    <div key={location.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex-1">
-                        <div className="font-medium">{location.name}</div>
-                        <div className="text-sm text-gray-500">{location.address}</div>
-                        <div className="text-xs text-gray-400 mt-1">
-                          Last used: {new Date(location.lastUsed).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => deleteLocation(location.id, location.name)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Existing Sessions */}
         {loading ? (
@@ -800,14 +776,30 @@ export default function AdminPage() {
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <CardTitle className="text-lg">
-                      {session.sport?.charAt(0).toUpperCase() + session.sport?.slice(1)} - {session.ageGroup}
-                    </CardTitle>
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-lg">
+                        {session.sport?.charAt(0).toUpperCase() + session.sport?.slice(1)} - {session.ageGroup}
+                      </CardTitle>
+                      {!session.isVisible && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full">
+                          <EyeOff className="h-3 w-3 text-gray-500" />
+                          <span className="text-xs text-gray-500">Hidden</span>
+                        </div>
+                      )}
+                    </div>
                     <p className="text-sm text-gray-600 mt-1">{session.focus}</p>
                   </div>
-                  <Badge className={getStatusColor(session.status)}>
-                    {session.status === "open" ? "Open" : session.status === "full" ? "Full" : "Cancelled"}
-                  </Badge>
+                  <div className="flex flex-col items-end gap-2">
+                    <Badge className={getStatusColor(session.status)}>
+                      {session.status === "open" ? "Open" : session.status === "full" ? "Full" : "Cancelled"}
+                    </Badge>
+                    {session.isVisible && (
+                      <div className="flex items-center gap-1 text-xs text-green-600">
+                        <Eye className="h-3 w-3" />
+                        <span>Visible</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
 
@@ -862,6 +854,15 @@ export default function AdminPage() {
                   <Button
                     size="sm"
                     variant="outline"
+                    className="flex-1 bg-transparent"
+                    onClick={() => fetchSessionPlayers(session.id)}
+                  >
+                    <UserCheck className="h-4 w-4 mr-1" />
+                    Players
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
                     className="flex-1 text-red-600 hover:text-red-700 bg-transparent"
                     onClick={() => deleteSession(session.id)}
                   >
@@ -872,6 +873,165 @@ export default function AdminPage() {
               </CardContent>
             </Card>
             ))}
+          </div>
+        )}
+
+        {/* Players List Modal */}
+        {showPlayersList && selectedSessionPlayers && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+              <div className="flex justify-between items-center p-6 border-b">
+                <div>
+                  <h2 className="text-xl font-bold">
+                    {selectedSessionPlayers.sport?.charAt(0).toUpperCase() + selectedSessionPlayers.sport?.slice(1)} - {selectedSessionPlayers.ageGroup}
+                  </h2>
+                  <p className="text-gray-600 mt-1">
+                    {formatSessionDate(selectedSessionPlayers.date)} at {selectedSessionPlayers.time}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {selectedSessionPlayers.registrations?.length || 0} / {selectedSessionPlayers.maxParticipants} players registered
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowPlayersList(false)
+                    setSelectedSessionPlayers(null)
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                {selectedSessionPlayers.registrations?.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">No players registered yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {selectedSessionPlayers.registrations?.map((registration: any, index: number) => (
+                      <Card key={registration.id} className="p-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <h4 className="font-semibold text-lg flex items-center">
+                              <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">
+                                {index + 1}
+                              </span>
+                              {registration.playerName}
+                              {registration.playerAge && (
+                                <span className="text-sm text-gray-500 ml-2">({registration.playerAge}y)</span>
+                              )}
+                            </h4>
+                            
+                            <div className="mt-2 space-y-1">
+                              <div className="flex items-center text-sm">
+                                <Users className="h-4 w-4 mr-2 text-gray-500" />
+                                <span className="font-medium">Parent:</span>
+                                <span className="ml-1">{registration.parentName}</span>
+                              </div>
+                              
+                              <div className="flex items-center text-sm">
+                                <Mail className="h-4 w-4 mr-2 text-gray-500" />
+                                <a href={`mailto:${registration.parentEmail}`} className="text-blue-600 hover:underline">
+                                  {registration.parentEmail}
+                                </a>
+                              </div>
+                              
+                              <div className="flex items-center text-sm">
+                                <Phone className="h-4 w-4 mr-2 text-gray-500" />
+                                <a href={`tel:${registration.parentPhone}`} className="text-blue-600 hover:underline">
+                                  {registration.parentPhone}
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            {registration.experience && (
+                              <div>
+                                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Experience</span>
+                                <p className="text-sm">{registration.experience}</p>
+                              </div>
+                            )}
+                            
+                            {registration.medicalInfo && (
+                              <div>
+                                <span className="text-xs font-medium text-red-500 uppercase tracking-wide">Medical Info</span>
+                                <p className="text-sm text-red-700 bg-red-50 p-2 rounded">{registration.medicalInfo}</p>
+                              </div>
+                            )}
+                            
+                            {registration.emergencyContact && (
+                              <div>
+                                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Emergency Contact</span>
+                                <p className="text-sm">
+                                  {registration.emergencyContact}
+                                  {registration.emergencyPhone && (
+                                    <a href={`tel:${registration.emergencyPhone}`} className="text-blue-600 hover:underline ml-2">
+                                      {registration.emergencyPhone}
+                                    </a>
+                                  )}
+                                </p>
+                              </div>
+                            )}
+                            
+                            {registration.specialNotes && (
+                              <div>
+                                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Special Notes</span>
+                                <p className="text-sm">{registration.specialNotes}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                {selectedSessionPlayers.registrations?.length > 0 && (
+                  <div className="flex justify-center mt-6 pt-4 border-t">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        // Create a simple text export
+                        const sessionInfo = `${selectedSessionPlayers.sport?.charAt(0).toUpperCase() + selectedSessionPlayers.sport?.slice(1)} - ${selectedSessionPlayers.ageGroup}
+${formatSessionDate(selectedSessionPlayers.date)} at ${selectedSessionPlayers.time}
+${selectedSessionPlayers.location} - ${selectedSessionPlayers.address}
+
+REGISTERED PLAYERS (${selectedSessionPlayers.registrations?.length}):
+
+${selectedSessionPlayers.registrations?.map((reg: any, i: number) => 
+`${i + 1}. ${reg.playerName}${reg.playerAge ? ` (${reg.playerAge}y)` : ''}
+   Parent: ${reg.parentName}
+   Email: ${reg.parentEmail}
+   Phone: ${reg.parentPhone}${reg.experience ? `
+   Experience: ${reg.experience}` : ''}${reg.medicalInfo ? `
+   Medical: ${reg.medicalInfo}` : ''}${reg.emergencyContact ? `
+   Emergency: ${reg.emergencyContact} ${reg.emergencyPhone || ''}` : ''}${reg.specialNotes ? `
+   Notes: ${reg.specialNotes}` : ''}
+`).join('\n')}
+
+Generated: ${new Date().toLocaleString()}`
+
+                        const blob = new Blob([sessionInfo], { type: 'text/plain' })
+                        const url = URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = url
+                        a.download = `${selectedSessionPlayers.sport}-${selectedSessionPlayers.ageGroup}-${selectedSessionPlayers.date}-players.txt`
+                        a.click()
+                        URL.revokeObjectURL(url)
+                      }}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Export Player List
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </main>

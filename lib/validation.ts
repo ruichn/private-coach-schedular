@@ -19,7 +19,8 @@ export const createSessionSchema = z.object({
   address: z.string().min(1, 'Address is required').max(200, 'Address too long'),
   maxParticipants: z.number().int().min(1, 'Must allow at least 1 participant').max(50, 'Too many participants'),
   price: z.number().min(0, 'Price cannot be negative').max(1000, 'Price too high').optional(),
-  focus: z.string().max(100, 'Focus description too long').optional()
+  focus: z.string().max(100, 'Focus description too long').optional(),
+  isVisible: z.boolean().optional()
 })
 
 // Registration validation

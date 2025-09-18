@@ -17,6 +17,7 @@
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-sns": "^3.891.0",
     "@edge-runtime/vm": "latest",
     "@hookform/resolvers": "^3.9.1",
     "@jest/globals": "latest",

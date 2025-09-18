@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { sendRegistrationConfirmation } from '@/lib/email'
+import { sendRegistrationSMS } from '@/lib/sms'
 import { registrationSchema, cancellationSchema, validateRequest } from '@/lib/validation'
 import { sanitizeLogData } from '@/lib/security'
 import crypto from 'crypto'
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json()
@@ -31,7 +32,8 @@ export async function POST(
       specialNotes,
     } = validation.data
 
-    const sessionId = Number(params.id)
+    const { id } = await params
+    const sessionId = Number(id)
     console.log('Registration request for session:', sessionId, 'Player:', '[REDACTED]')
 
     // Check if session exists and has capacity
@@ -46,6 +48,25 @@ export async function POST(
 
     if (session.registrations.length >= session.maxParticipants) {
       return NextResponse.json({ error: 'Session is full' }, { status: 400 })
+    }
+
+    // Check for duplicate registration - same email and player name for this session
+    const existingRegistration = await prisma.registration.findFirst({
+      where: {
+        sessionId: sessionId,
+        parentEmail: parentEmail.toLowerCase(), // Case-insensitive email check
+        playerName: {
+          equals: playerName,
+          mode: 'insensitive' // Case-insensitive name check
+        }
+      }
+    })
+
+    if (existingRegistration) {
+      return NextResponse.json({ 
+        error: `${playerName} is already registered for this session with email ${parentEmail}. Please check your email for the confirmation details or contact us if you need to make changes.`,
+        isDuplicate: true
+      }, { status: 409 }) // 409 Conflict status for duplicate
     }
 
     // Generate cancellation token that expires 24 hours before session
@@ -84,7 +105,7 @@ export async function POST(
           playerName,
           playerAge: typeof playerAge === 'number' ? playerAge : null,
           parentName,
-          parentEmail,
+          parentEmail: parentEmail.toLowerCase(), // Store email in lowercase for consistency
           parentPhone,
           emergencyContact: emergencyContact || null,
           emergencyPhone: emergencyPhone || null,
@@ -133,6 +154,34 @@ export async function POST(
       // Don't fail the registration if email fails
     }
 
+    // Send confirmation SMS
+    try {
+      const smsSuccess = await sendRegistrationSMS({
+        playerName,
+        parentName,
+        parentPhone,
+        sessionDate: session.date.toISOString(),
+        sessionTime: session.time,
+        sessionLocation: session.location,
+        sessionAddress: session.address,
+        ageGroup: session.ageGroup,
+        sport: session.sport || 'volleyball',
+        focus: session.focus,
+        price: session.price,
+        cancellationToken,
+        cancellationUrl,
+      })
+      
+      if (smsSuccess) {
+        console.log('Registration confirmation SMS sent successfully')
+      } else {
+        console.log('SMS sending failed, but registration still successful')
+      }
+    } catch (smsError) {
+      console.error('Failed to send confirmation SMS:', sanitizeLogData(smsError))
+      // Don't fail the registration if SMS fails
+    }
+
     console.log('Registration created successfully:', result.id)
     return NextResponse.json(result, { status: 201 })
   } catch (error) {
@@ -146,7 +195,7 @@ export async function POST(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { searchParams } = new URL(request.url)
@@ -159,15 +208,19 @@ export async function DELETE(
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const sessionId = Number(params.id)
+    const { id } = await params
+    const sessionId = Number(id)
     console.log('Cancellation request for session:', sessionId)
 
-    // Find the registration
+    // Find the registration with case-insensitive matching
     const registration = await prisma.registration.findFirst({
       where: {
         sessionId: sessionId,
-        parentEmail: email,
-        playerName: playerName
+        parentEmail: email?.toLowerCase(), // Case-insensitive email lookup
+        playerName: {
+          equals: playerName,
+          mode: 'insensitive' // Case-insensitive name lookup
+        }
       }
     })
 
