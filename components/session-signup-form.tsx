@@ -7,15 +7,27 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { CheckCircle, UserX, AlertTriangle, ArrowLeft } from "lucide-react"
+import { CheckCircle, UserX, AlertTriangle, ArrowLeft, Calendar, Download } from "lucide-react"
+
+interface SessionData {
+  id: number
+  sport: string
+  ageGroup: string
+  date: Date
+  time: string
+  location: string
+  address: string
+  focus: string
+}
 
 interface SessionSignupFormProps {
   sessionId: number
   sessionPrice: number
+  sessionData?: SessionData
   onRegistrationSuccess?: () => void
 }
 
-export default function SessionSignupForm({ sessionId, sessionPrice, onRegistrationSuccess }: SessionSignupFormProps) {
+export default function SessionSignupForm({ sessionId, sessionPrice, sessionData, onRegistrationSuccess }: SessionSignupFormProps) {
   const [formData, setFormData] = useState({
     playerName: "",
     playerAge: "",
@@ -33,6 +45,201 @@ export default function SessionSignupForm({ sessionId, sessionPrice, onRegistrat
   const [isSuccess, setIsSuccess] = useState(false)
   const [registeredPlayerName, setRegisteredPlayerName] = useState("")
   const [duplicateError, setDuplicateError] = useState<string>("")
+
+  // Calendar generation functions
+  const generateCalendarEvent = (format: 'google' | 'outlook' | 'ics') => {
+    if (!sessionData) return
+
+    console.log('Session data:', sessionData)
+    console.log('Original date:', sessionData.date, 'Type:', typeof sessionData.date)
+
+    // Handle date creation more safely, avoiding timezone issues
+    let startDate: Date
+    
+    if (sessionData.date instanceof Date) {
+      // If it's already a Date object, check if it needs timezone correction
+      const existingDate = sessionData.date
+      console.log('Existing Date object:', existingDate)
+      
+      // Check if the date appears to be off by timezone (common issue)
+      // If the time shows as 17:00:00 (5 PM) but should be start of day, fix it
+      if (existingDate.getHours() !== 0 || existingDate.getMinutes() !== 0) {
+        console.log('Date has time component, creating date-only version')
+        // Create a new date using just the date components in local timezone
+        startDate = new Date(existingDate.getFullYear(), existingDate.getMonth(), existingDate.getDate())
+        console.log('Corrected date:', startDate)
+      } else {
+        startDate = new Date(existingDate)
+      }
+    } else {
+      // If it's a string, parse it properly and avoid timezone issues
+      const dateStr = sessionData.date.toString()
+      console.log('Parsing date string:', dateStr)
+      
+      // If it's an ISO string, parse it as local date to avoid timezone conversion
+      if (dateStr.includes('T') || dateStr.includes('Z')) {
+        // Extract just the date part (YYYY-MM-DD) and create local date
+        const datePart = dateStr.split('T')[0]
+        console.log('Extracted date part:', datePart)
+        const [year, month, day] = datePart.split('-').map(Number)
+        console.log('Date parts:', { year, month, day })
+        startDate = new Date(year, month - 1, day, 0, 0, 0, 0) // month is 0-indexed, set time to start of day
+        console.log('Created local date from ISO:', startDate)
+      } else if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        // Simple YYYY-MM-DD format
+        const [year, month, day] = dateStr.split('-').map(Number)
+        startDate = new Date(year, month - 1, day, 0, 0, 0, 0)
+        console.log('Created local date from simple format:', startDate)
+      } else {
+        startDate = new Date(dateStr)
+        console.log('Created date using Date constructor:', startDate)
+      }
+    }
+    
+    console.log('Created startDate:', startDate, 'Valid:', !isNaN(startDate.getTime()))
+    console.log('Date components:', {
+      year: startDate.getFullYear(),
+      month: startDate.getMonth() + 1, // Display month as 1-indexed
+      day: startDate.getDate()
+    })
+    
+    // Validate the date
+    if (isNaN(startDate.getTime())) {
+      console.error('Invalid date:', sessionData.date)
+      alert('Unable to create calendar event due to invalid date.')
+      return
+    }
+
+    // Parse time range format like "5:30 PM - 7:00 PM"
+    const parseTime = (timeString: string) => {
+      console.log('Parsing time string:', timeString)
+      
+      // Extract start time from range (before the " - ")
+      let startTimeStr = timeString.split(' - ')[0].trim()
+      console.log('Start time string:', startTimeStr)
+      
+      // Parse AM/PM format
+      const isPM = startTimeStr.toLowerCase().includes('pm')
+      const isAM = startTimeStr.toLowerCase().includes('am')
+      
+      // Remove AM/PM
+      startTimeStr = startTimeStr.replace(/\s*(am|pm)/i, '')
+      
+      const [hourStr, minuteStr] = startTimeStr.split(':')
+      let hours = parseInt(hourStr, 10)
+      const minutes = parseInt(minuteStr, 10) || 0
+      
+      // Convert to 24-hour format
+      if (isPM && hours !== 12) {
+        hours += 12
+      } else if (isAM && hours === 12) {
+        hours = 0
+      }
+      
+      console.log('Parsed time:', { hours, minutes, isPM, isAM })
+      return { hours, minutes }
+    }
+    
+    let hours: number, minutes: number
+    
+    try {
+      const parsedTime = parseTime(sessionData.time)
+      hours = parsedTime.hours
+      minutes = parsedTime.minutes
+      
+      // Validate hour and minute ranges
+      if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        console.error('Time values out of range:', { hours, minutes })
+        alert('Unable to create calendar event due to invalid time values.')
+        return
+      }
+      
+      console.log('Final parsed time:', { hours, minutes })
+    } catch (error) {
+      console.error('Error parsing time:', error, 'Time string:', sessionData.time)
+      alert('Unable to create calendar event due to invalid time format.')
+      return
+    }
+    
+    startDate.setHours(hours, minutes, 0, 0)
+    console.log('Start date after setting time:', startDate, 'Valid:', !isNaN(startDate.getTime()))
+    
+    const endDate = new Date(startDate)
+    endDate.setHours(startDate.getHours() + 1, startDate.getMinutes(), 0, 0) // Assume 1 hour duration
+    console.log('End date:', endDate, 'Valid:', !isNaN(endDate.getTime()))
+    
+    // Validate both dates before proceeding
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      console.error('Invalid dates after time processing:', { startDate, endDate })
+      alert('Unable to create calendar event due to invalid time values.')
+      return
+    }
+    
+    const title = `${sessionData.sport.charAt(0).toUpperCase() + sessionData.sport.slice(1)} Training - ${sessionData.ageGroup}`
+    const description = `${sessionData.focus}\n\nRegistered player: ${registeredPlayerName}\nCoach: Coach Robe Sports Training`
+    const location = `${sessionData.location}, ${sessionData.address}`
+    
+    if (format === 'google') {
+      const googleStartDate = startDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+      const googleEndDate = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${googleStartDate}/${googleEndDate}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}`
+      window.open(googleUrl, '_blank')
+    } else if (format === 'outlook') {
+      const outlookUrl = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(title)}&startdt=${startDate.toISOString()}&enddt=${endDate.toISOString()}&body=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}`
+      window.open(outlookUrl, '_blank')
+    } else if (format === 'ics') {
+      const formatDate = (date: Date) => {
+        if (isNaN(date.getTime())) {
+          throw new Error('Invalid date provided to formatDate')
+        }
+        
+        // Format as local time instead of UTC to avoid timezone issues
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        const hours = String(date.getHours()).padStart(2, '0')
+        const minutes = String(date.getMinutes()).padStart(2, '0')
+        const seconds = String(date.getSeconds()).padStart(2, '0')
+        
+        // Return in local time format (without Z suffix which indicates UTC)
+        return `${year}${month}${day}T${hours}${minutes}${seconds}`
+      }
+      
+      try {
+        console.log('Creating ICS file...')
+        console.log('Start date for formatting:', startDate)
+        console.log('End date for formatting:', endDate)
+        
+        const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Coach Robe Sports Training//EN
+BEGIN:VEVENT
+UID:${sessionData.id}-${Date.now()}@coachrobe.com
+DTSTART:${formatDate(startDate)}
+DTEND:${formatDate(endDate)}
+SUMMARY:${title}
+DESCRIPTION:${description.replace(/\n/g, '\\n')}
+LOCATION:${location}
+END:VEVENT
+END:VCALENDAR`
+        
+        console.log('ICS content created:', icsContent.substring(0, 200) + '...')
+        
+        const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.ics`
+        console.log('Triggering download...')
+        link.click()
+        URL.revokeObjectURL(url)
+        console.log('ICS download completed successfully')
+      } catch (error) {
+        console.error('Error creating ICS file:', error)
+        alert('Unable to create calendar file. Please try Google Calendar or Outlook instead.')
+      }
+    }
+  }
 
   const formatPhoneNumber = (value: string) => {
     // Remove all non-numeric characters
@@ -159,6 +366,42 @@ export default function SessionSignupForm({ sessionId, sessionPrice, onRegistrat
               <li>• Or cancel manually anytime using the button below</li>
             </ul>
           </div>
+
+          {sessionData && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-sm text-green-800 mb-3">
+                <Calendar className="h-4 w-4 inline mr-1" />
+                <strong>Add to Calendar</strong>
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => generateCalendarEvent('google')}
+                  className="bg-white hover:bg-gray-50"
+                >
+                  Google Calendar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => generateCalendarEvent('outlook')}
+                  className="bg-white hover:bg-gray-50"
+                >
+                  Outlook
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => generateCalendarEvent('ics')}
+                  className="bg-white hover:bg-gray-50"
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  Download .ics
+                </Button>
+              </div>
+            </div>
+          )}
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/sessions">

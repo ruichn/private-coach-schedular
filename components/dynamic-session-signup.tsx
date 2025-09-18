@@ -41,10 +41,21 @@ export default function DynamicSessionSignup({ initialSession }: DynamicSessionS
       const response = await fetch(`/api/sessions/${session.id}`)
       if (response.ok) {
         const updatedSession = await response.json()
+        // Parse date safely to avoid timezone issues
+        const parseDate = (dateString: string) => {
+          if (dateString.includes('T') || dateString.includes('Z')) {
+            // Extract just the date part (YYYY-MM-DD) and create local date
+            const datePart = dateString.split('T')[0]
+            const [year, month, day] = datePart.split('-').map(Number)
+            return new Date(year, month - 1, day) // month is 0-indexed
+          }
+          return new Date(dateString)
+        }
+        
         setSession({
           ...updatedSession,
           currentParticipants: updatedSession.registrations?.length || updatedSession.currentParticipants,
-          date: new Date(updatedSession.date)
+          date: parseDate(updatedSession.date)
         })
       }
     } catch (error) {
@@ -170,6 +181,16 @@ export default function DynamicSessionSignup({ initialSession }: DynamicSessionS
               <SessionSignupForm 
                 sessionId={session.id} 
                 sessionPrice={session.price}
+                sessionData={{
+                  id: session.id,
+                  sport: session.sport,
+                  ageGroup: session.ageGroup,
+                  date: session.date,
+                  time: session.time,
+                  location: session.location,
+                  address: session.address,
+                  focus: session.focus
+                }}
                 onRegistrationSuccess={handleRegistrationSuccess}
               />
             </CardContent>
