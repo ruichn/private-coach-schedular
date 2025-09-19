@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge"
 import { Users, Calendar, ArrowRight, MapPin, Clock } from "lucide-react"
 import { formatSessionDateShort } from "@/lib/date-utils"
+import Navigation from "@/components/ui/navigation"
 
 interface Session {
   id: number
@@ -59,34 +60,7 @@ export default function Home() {
   }
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="font-bold text-xl">
-            Coach Robe Sports Training
-          </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/sessions" className="text-sm font-medium hover:text-gray-600">
-              Sessions
-            </Link>
-            <Link href="/cancel" className="text-sm font-medium hover:text-gray-600">
-              Cancel Registration
-            </Link>
-            <Link href="/contact" className="text-sm font-medium hover:text-gray-600">
-              Contact
-            </Link>
-            <Link href="/about" className="text-sm font-medium hover:text-gray-600">
-              About
-            </Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/admin">
-              <Button variant="outline" size="sm">
-                Coach Login
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Navigation currentPage="/" />
 
       <main>
         <section className="py-16 md:py-24">

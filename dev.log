@@ -8,218 +8,51 @@
    - Environments: .env
 
  ✓ Starting...
- ✓ Ready in 880ms
+ ✓ Ready in 871ms
  ○ Compiling / ...
- ✓ Compiled / in 754ms (760 modules)
- GET / 200 in 910ms
- ✓ Compiled in 190ms (340 modules)
- ✓ Compiled in 43ms (340 modules)
- ✓ Compiled in 72ms (340 modules)
- GET / 200 in 65ms
- ✓ Compiled /api/sessions in 242ms (860 modules)
- GET /api/sessions 200 in 1168ms
- ✓ Compiled /sessions/[id]/signup in 262ms (895 modules)
-Error: Route "/sessions/[id]/signup" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at SessionSignup (app/sessions/[id]/signup/page.tsx:38:42)
-  36 |
-  37 | export default async function SessionSignup({ params }: { params: { id: string } }) {
-> 38 |   const session = await getSession(params.id)
-     |                                          ^
-  39 |
-  40 |   if (!session) {
-  41 |     return <div>Session not found</div>
- GET /sessions/14/signup 200 in 752ms
- ○ Compiling /api/sessions/[id]/registrations ...
- ✓ Compiled /api/sessions/[id]/registrations in 1094ms (1729 modules)
-Error: Route "/api/sessions/[id]/registrations" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at POST (app/api/sessions/[id]/registrations/route.ts:35:36)
-  33 |     } = validation.data
-  34 |
-> 35 |     const sessionId = Number(params.id)
-     |                                    ^
-  36 |     console.log('Registration request for session:', sessionId, 'Player:', '[REDACTED]')
-  37 |
-  38 |     // Check if session exists and has capacity
-Registration request for session: 14 Player: [REDACTED]
-Registration confirmation email sent to chnrui@gmail.com
-Registration confirmation email sent successfully
-Failed to send confirmation SMS: {}
-Registration created successfully: 13
- POST /api/sessions/14/registrations 201 in 4058ms
- ✓ Compiled /api/sessions/[id] in 150ms (1731 modules)
- GET /api/sessions/14 200 in 503ms
-Error: Route "/sessions/[id]/signup" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at SessionSignup (app/sessions/[id]/signup/page.tsx:38:42)
-  36 |
-  37 | export default async function SessionSignup({ params }: { params: { id: string } }) {
-> 38 |   const session = await getSession(params.id)
-     |                                          ^
-  39 |
-  40 |   if (!session) {
-  41 |     return <div>Session not found</div>
- GET /sessions/14/signup 200 in 220ms
- ✓ Compiled in 465ms (798 modules)
-Error: Route "/sessions/[id]/signup" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at SessionSignup (app/sessions/[id]/signup/page.tsx:38:42)
-  36 |
-  37 | export default async function SessionSignup({ params }: { params: { id: string } }) {
-> 38 |   const session = await getSession(params.id)
-     |                                          ^
-  39 |
-  40 |   if (!session) {
-  41 |     return <div>Session not found</div>
- GET /sessions/14/signup 200 in 738ms
- ✓ Compiled in 118ms (798 modules)
-Error: Route "/sessions/[id]/signup" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at SessionSignup (app/sessions/[id]/signup/page.tsx:38:42)
-  36 |
-  37 | export default async function SessionSignup({ params }: { params: { id: string } }) {
-> 38 |   const session = await getSession(params.id)
-     |                                          ^
-  39 |
-  40 |   if (!session) {
-  41 |     return <div>Session not found</div>
- GET /sessions/14/signup 200 in 118ms
- ✓ Compiled in 308ms (798 modules)
-Error: Route "/sessions/[id]/signup" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at SessionSignup (app/sessions/[id]/signup/page.tsx:38:42)
-  36 |
-  37 | export default async function SessionSignup({ params }: { params: { id: string } }) {
-> 38 |   const session = await getSession(params.id)
-     |                                          ^
-  39 |
-  40 |   if (!session) {
-  41 |     return <div>Session not found</div>
- GET /sessions/14/signup 200 in 171ms
- ✓ Compiled in 145ms (798 modules)
-Error: Route "/sessions/[id]/signup" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at SessionSignup (app/sessions/[id]/signup/page.tsx:38:42)
-  36 |
-  37 | export default async function SessionSignup({ params }: { params: { id: string } }) {
-> 38 |   const session = await getSession(params.id)
-     |                                          ^
-  39 |
-  40 |   if (!session) {
-  41 |     return <div>Session not found</div>
- GET /sessions/14/signup 200 in 131ms
- ✓ Compiled in 272ms (798 modules)
- GET /sessions/14/signup 200 in 284ms
- ✓ Compiled in 57ms (353 modules)
- GET /sessions/14/signup 200 in 301ms
- ✓ Compiled in 48ms (353 modules)
- GET /sessions/14/signup 200 in 111ms
- ✓ Compiled in 138ms (353 modules)
- ✓ Compiled in 60ms (353 modules)
- ✓ Compiled in 52ms (353 modules)
- ✓ Compiled in 66ms (353 modules)
- ✓ Compiled in 55ms (353 modules)
- ✓ Compiled in 54ms (353 modules)
- ✓ Compiled in 64ms (353 modules)
-   Reload env: .env
- ✓ Compiled in 150ms (784 modules)
- ✓ Compiled in 63ms (353 modules)
- ✓ Compiled in 73ms (353 modules)
- ✓ Compiled in 45ms (353 modules)
- ✓ Compiled in 74ms (353 modules)
- ✓ Compiled in 156ms (353 modules)
- ✓ Compiled in 67ms (353 modules)
- ✓ Compiled in 67ms (353 modules)
- ✓ Compiled in 64ms (353 modules)
- ✓ Compiled in 51ms (353 modules)
- ✓ Compiled in 54ms (353 modules)
- ✓ Compiled in 52ms (353 modules)
- ✓ Compiled in 48ms (353 modules)
- ✓ Compiled in 50ms (353 modules)
- ✓ Compiled in 55ms (353 modules)
- ✓ Compiled in 40ms (353 modules)
- ✓ Compiled in 37ms (353 modules)
- ✓ Compiled in 50ms (353 modules)
- ✓ Compiled in 43ms (353 modules)
- ✓ Compiled in 44ms (353 modules)
-<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/ruichen/Projects/private-coach-schedular/.next/cache/webpack/client-development/1.pack.gz_' -> '/Users/ruichen/Projects/private-coach-schedular/.next/cache/webpack/client-development/1.pack.gz'
- ✓ Compiled in 159ms (353 modules)
- ✓ Compiled in 52ms (353 modules)
- ✓ Compiled in 45ms (353 modules)
- ✓ Compiled in 362ms (798 modules)
- ✓ Compiled in 135ms (798 modules)
- ✓ Compiled in 115ms (798 modules)
- ✓ Compiled in 92ms (798 modules)
- ✓ Compiled in 124ms (798 modules)
- ✓ Compiled in 175ms (802 modules)
-<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/ruichen/Projects/private-coach-schedular/.next/cache/webpack/client-development/1.pack.gz_' -> '/Users/ruichen/Projects/private-coach-schedular/.next/cache/webpack/client-development/1.pack.gz'
- ✓ Compiled in 150ms (355 modules)
- ✓ Compiled in 55ms (355 modules)
- ✓ Compiled in 58ms (355 modules)
- ✓ Compiled in 49ms (355 modules)
- ✓ Compiled in 48ms (355 modules)
- ✓ Compiled in 58ms (355 modules)
- ✓ Compiled in 83ms (355 modules)
- ✓ Compiled in 120ms (788 modules)
- ✓ Compiled in 63ms (355 modules)
- ✓ Compiled in 51ms (355 modules)
- ✓ Compiled in 43ms (355 modules)
- ✓ Compiled in 56ms (355 modules)
- ✓ Compiled in 124ms (355 modules)
- ✓ Compiled in 55ms (355 modules)
- ✓ Compiled in 100ms (355 modules)
- ✓ Compiled in 92ms (355 modules)
- ✓ Compiled in 64ms (788 modules)
- ✓ Compiled in 55ms (355 modules)
- ✓ Compiled in 45ms (355 modules)
- ✓ Compiled in 71ms (355 modules)
- ✓ Compiled in 43ms (355 modules)
- ✓ Compiled in 92ms (355 modules)
- ✓ Compiled in 106ms (355 modules)
- ✓ Compiled in 95ms (355 modules)
- ✓ Compiled in 92ms (355 modules)
- ✓ Compiled in 53ms (355 modules)
- ✓ Compiled in 103ms (355 modules)
- ✓ Compiled in 79ms (788 modules)
- ✓ Compiled in 47ms (355 modules)
- ✓ Compiled in 53ms (355 modules)
- ✓ Compiled in 51ms (355 modules)
- ✓ Compiled in 55ms (355 modules)
- ✓ Compiled in 49ms (355 modules)
- ✓ Compiled in 52ms (355 modules)
- ✓ Compiled in 61ms (355 modules)
- ✓ Compiled in 51ms (355 modules)
- ✓ Compiled in 45ms (355 modules)
- ✓ Compiled in 59ms (355 modules)
- ✓ Compiled in 57ms (355 modules)
- ✓ Compiled in 94ms (355 modules)
- ✓ Compiled in 62ms (355 modules)
- ✓ Compiled in 53ms (355 modules)
- ✓ Compiled in 48ms (355 modules)
- ✓ Compiled in 53ms (355 modules)
- ✓ Compiled in 50ms (355 modules)
- ✓ Compiled in 51ms (355 modules)
- ✓ Compiled in 122ms (355 modules)
- ✓ Compiled in 57ms (355 modules)
- ✓ Compiled in 54ms (355 modules)
- ✓ Compiled in 71ms (355 modules)
- ✓ Compiled in 55ms (355 modules)
- ✓ Compiled in 68ms (355 modules)
- ✓ Compiled in 124ms (355 modules)
- ✓ Compiled in 57ms (355 modules)
- ✓ Compiled in 51ms (355 modules)
- ✓ Compiled in 63ms (355 modules)
- ✓ Compiled in 49ms (355 modules)
- ✓ Compiled in 46ms (355 modules)
- ✓ Compiled in 66ms (355 modules)
- ✓ Compiled in 99ms (355 modules)
- ✓ Compiled in 64ms (355 modules)
- ✓ Compiled in 60ms (355 modules)
- ✓ Compiled in 49ms (355 modules)
- ✓ Compiled in 75ms (355 modules)
- ✓ Compiled in 91ms (355 modules)
- ✓ Compiled in 85ms (355 modules)
- ✓ Compiled in 87ms (355 modules)
- ✓ Compiled in 75ms (355 modules)
- ✓ Compiled in 121ms (355 modules)
- ✓ Compiled in 317ms (355 modules)
- ✓ Compiled in 79ms (355 modules)
- ✓ Compiled in 52ms (355 modules)
- ✓ Compiled in 61ms (355 modules)
- ✓ Compiled in 51ms (355 modules)
- ✓ Compiled in 44ms (355 modules)
- ✓ Compiled in 47ms (355 modules)
+ ✓ Compiled / in 1307ms (762 modules)
+ HEAD / 200 in 1474ms
+ ✓ Compiled in 203ms (341 modules)
+ ✓ Compiled in 43ms (341 modules)
+ GET / 200 in 45ms
+ ✓ Compiled /api/sessions in 293ms (862 modules)
+ GET /api/sessions 200 in 3492ms
+ ✓ Compiled /admin in 378ms (1058 modules)
+ GET /admin 200 in 439ms
+ ✓ Compiled /admin/login in 100ms (1071 modules)
+ GET /admin/login 200 in 136ms
+ GET /admin/login 200 in 14ms
+ ✓ Compiled /api/admin/login in 89ms (1073 modules)
+Failed admin login attempt from IP: 127.0.0.1
+ POST /api/admin/login 401 in 319ms
+Admin login successful from IP: 127.0.0.1
+ POST /api/admin/login 200 in 205ms
+ GET /admin 200 in 9ms
+ ✓ Compiled /api/locations in 124ms (1075 modules)
+ GET /api/sessions?includeHidden=true 200 in 610ms
+ GET /api/locations 200 in 818ms
+ GET /api/locations 200 in 114ms
+ GET /api/sessions?includeHidden=true 200 in 337ms
+ ✓ Compiled /admin/participants in 312ms (1098 modules)
+ GET /admin/participants 200 in 331ms
+ GET /api/sessions?includeHidden=true 200 in 484ms
+ GET /api/sessions?includeHidden=true 200 in 378ms
+ ✓ Compiled /admin/locations in 149ms (1107 modules)
+ GET /admin/locations 200 in 168ms
+ GET /api/locations 200 in 342ms
+ GET /api/locations 200 in 110ms
+ GET /admin 200 in 9ms
+ GET /api/locations 200 in 65ms
+ GET /api/locations 200 in 114ms
+ GET /api/sessions?includeHidden=true 200 in 360ms
+ GET /api/sessions?includeHidden=true 200 in 248ms
+ ✓ Compiled in 399ms (985 modules)
+ GET /admin 200 in 58ms
+ GET / 200 in 9ms
+ ✓ Compiled /api/sessions in 128ms (638 modules)
+ GET /api/sessions 200 in 890ms
+ GET /api/sessions 200 in 140ms
+ ✓ Compiled in 118ms (460 modules)
+ GET / 200 in 61ms
+ ✓ Compiled in 82ms (460 modules)
+ GET / 200 in 8ms

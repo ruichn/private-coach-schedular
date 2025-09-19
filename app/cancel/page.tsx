@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AlertCircle, CheckCircle, UserX } from "lucide-react"
 import { formatSessionDate } from "@/lib/date-utils"
+import Navigation from "@/components/ui/navigation"
 
 export default function CancelPage() {
   const [formData, setFormData] = useState({
@@ -107,31 +108,7 @@ export default function CancelPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="font-bold text-xl">
-            Coach Robe Volleyball
-          </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/sessions" className="text-sm font-medium hover:text-gray-600">
-              Sessions
-            </Link>
-            <Link href="/about" className="text-sm font-medium hover:text-gray-600">
-              About
-            </Link>
-            <Link href="/contact" className="text-sm font-medium hover:text-gray-600">
-              Contact
-            </Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/admin">
-              <Button variant="outline" size="sm">
-                Coach Login
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Navigation currentPage="/cancel" />
 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">

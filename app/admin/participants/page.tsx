@@ -8,10 +8,13 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, MapPin, Users, Mail, Phone, Download, Search, Filter, FileText, ArrowLeft, Grid, List, User } from "lucide-react"
+import { Calendar, Clock, MapPin, Users, Mail, Phone, Download, Search, Filter, FileText, ArrowLeft, Grid, List, User, Edit, Trash2 } from "lucide-react"
 import { formatSessionDate } from "@/lib/date-utils"
+import AdminNavigation from "@/components/ui/admin-navigation"
 
 interface BaseRegistration {
   id: number
@@ -69,6 +72,20 @@ export default function ParticipantsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [sportFilter, setSportFilter] = useState("all")
   const [dateFilter, setDateFilter] = useState("all")
+  const [editingParticipant, setEditingParticipant] = useState<BaseRegistration | null>(null)
+  const [showEditForm, setShowEditForm] = useState(false)
+  const [editFormData, setEditFormData] = useState({
+    playerName: "",
+    playerAge: "",
+    parentName: "",
+    parentEmail: "",
+    parentPhone: "",
+    emergencyContact: "",
+    emergencyPhone: "",
+    medicalInfo: "",
+    experience: "",
+    specialNotes: "",
+  })
 
   // Check authentication on component mount
   useEffect(() => {
@@ -126,6 +143,94 @@ export default function ParticipantsPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Handle editing a participant
+  const handleEditParticipant = (registration: BaseRegistration) => {
+    setEditingParticipant(registration)
+    setEditFormData({
+      playerName: registration.playerName || "",
+      playerAge: registration.playerAge?.toString() || "",
+      parentName: registration.parentName || "",
+      parentEmail: registration.parentEmail || "",
+      parentPhone: registration.parentPhone || "",
+      emergencyContact: registration.emergencyContact || "",
+      emergencyPhone: registration.emergencyPhone || "",
+      medicalInfo: registration.medicalInfo || "",
+      experience: registration.experience || "",
+      specialNotes: registration.specialNotes || "",
+    })
+    setShowEditForm(true)
+  }
+
+  // Handle deleting a participant
+  const handleDeleteParticipant = async (registrationId: number) => {
+    if (!confirm('Are you sure you want to delete this participant registration? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/registrations/${registrationId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+
+      if (response.ok) {
+        // Refresh data after successful deletion
+        await fetchData()
+        console.log('Participant deleted successfully')
+      } else {
+        const error = await response.json()
+        alert(`Failed to delete participant: ${error.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error deleting participant:', error)
+      alert('Failed to delete participant. Please try again.')
+    }
+  }
+
+  // Handle saving edited participant
+  const handleSaveParticipant = async () => {
+    if (!editingParticipant) return
+
+    try {
+      const updatedData = {
+        ...editFormData,
+        playerAge: editFormData.playerAge ? parseInt(editFormData.playerAge) : null
+      }
+
+      const response = await fetch(`/api/registrations/${editingParticipant.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(updatedData)
+      })
+
+      if (response.ok) {
+        // Refresh data after successful update
+        await fetchData()
+        setShowEditForm(false)
+        setEditingParticipant(null)
+        console.log('Participant updated successfully')
+      } else {
+        const error = await response.json()
+        alert(`Failed to update participant: ${error.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error updating participant:', error)
+      alert('Failed to update participant. Please try again.')
+    }
+  }
+
+  // Handle form input changes
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
   }
 
   // Date filtering function - defined here to avoid hoisting issues
@@ -355,35 +460,7 @@ ${'─'.repeat(40)}`
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="font-bold text-xl">
-            Coach Robe Admin
-          </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/admin" className="text-sm font-medium hover:text-gray-600">
-              Sessions
-            </Link>
-            <span className="text-sm font-medium text-blue-600">
-              Participants
-            </span>
-            <Link href="/admin/locations" className="text-sm font-medium hover:text-gray-600">
-              Locations
-            </Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/admin">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Admin
-              </Button>
-            </Link>
-            <Button variant="ghost" onClick={logout} className="text-red-600 hover:text-red-700">
-              Logout
-            </Button>
-          </div>
-        </div>
-      </header>
+      <AdminNavigation currentPage="/admin/participants" onLogout={logout} />
 
       <main className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
@@ -405,7 +482,7 @@ ${'─'.repeat(40)}`
           <CardContent className="pt-6">
             <div className="flex items-center gap-4 mb-4">
               <span className="text-sm font-medium text-gray-700">View:</span>
-              <div className="flex bg-gray-100 rounded-lg p-1 gap-2">
+              <div className="flex gap-2">
                 <Button
                   variant={viewMode === 'by-session' ? 'default' : 'ghost'}
                   size="sm"
@@ -475,6 +552,139 @@ ${'─'.repeat(40)}`
           </CardContent>
         </Card>
 
+        {/* Edit Participant Form */}
+        {showEditForm && editingParticipant && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Edit Participant: {editingParticipant.playerName}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-playerName">Player Name *</Label>
+                  <Input
+                    id="edit-playerName"
+                    name="playerName"
+                    value={editFormData.playerName}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-playerAge">Player Age</Label>
+                  <Input
+                    id="edit-playerAge"
+                    name="playerAge"
+                    type="number"
+                    min="10"
+                    max="18"
+                    value={editFormData.playerAge}
+                    onChange={handleEditFormChange}
+                    placeholder="Optional"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-parentName">Parent/Guardian Name *</Label>
+                  <Input
+                    id="edit-parentName"
+                    name="parentName"
+                    value={editFormData.parentName}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-parentEmail">Email Address *</Label>
+                  <Input
+                    id="edit-parentEmail"
+                    name="parentEmail"
+                    type="email"
+                    value={editFormData.parentEmail}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-parentPhone">Phone Number *</Label>
+                  <Input
+                    id="edit-parentPhone"
+                    name="parentPhone"
+                    type="tel"
+                    value={editFormData.parentPhone}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-emergencyContact">Emergency Contact</Label>
+                  <Input
+                    id="edit-emergencyContact"
+                    name="emergencyContact"
+                    value={editFormData.emergencyContact}
+                    onChange={handleEditFormChange}
+                    placeholder="Optional"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-emergencyPhone">Emergency Phone</Label>
+                  <Input
+                    id="edit-emergencyPhone"
+                    name="emergencyPhone"
+                    type="tel"
+                    value={editFormData.emergencyPhone}
+                    onChange={handleEditFormChange}
+                    placeholder="Optional"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="edit-experience">Volleyball Experience</Label>
+                  <Textarea
+                    id="edit-experience"
+                    name="experience"
+                    placeholder="Describe the player's volleyball experience"
+                    value={editFormData.experience}
+                    onChange={handleEditFormChange}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="edit-medicalInfo">Medical Conditions/Allergies</Label>
+                  <Textarea
+                    id="edit-medicalInfo"
+                    name="medicalInfo"
+                    placeholder="Any medical conditions, allergies, or medications"
+                    value={editFormData.medicalInfo}
+                    onChange={handleEditFormChange}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="edit-specialNotes">Special Notes</Label>
+                  <Textarea
+                    id="edit-specialNotes"
+                    name="specialNotes"
+                    placeholder="Any additional information or special requests"
+                    value={editFormData.specialNotes}
+                    onChange={handleEditFormChange}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-4 mt-6">
+                <Button onClick={handleSaveParticipant}>
+                  Save Changes
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowEditForm(false)
+                    setEditingParticipant(null)
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -539,52 +749,80 @@ ${'─'.repeat(40)}`
                   {session.registrations && session.registrations.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {session.registrations.map((registration, index) => (
-                      <Card key={registration.id} className="p-4 border-l-4 border-l-blue-500">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-semibold">
-                              {index + 1}. {registration.playerName}
-                            </h4>
-                            {registration.playerAge && (
-                              <span className="text-sm text-gray-500">({registration.playerAge}y)</span>
+                      <Card key={registration.id} className="hover:shadow-lg transition-shadow">
+                        <CardContent className="p-4">
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-semibold text-lg">
+                                  {index + 1}. {registration.playerName}
+                                </h4>
+                                {registration.playerAge && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {registration.playerAge}y
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="bg-transparent p-2"
+                                  onClick={() => handleEditParticipant(registration)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-600 hover:text-red-700 bg-transparent p-2"
+                                  onClick={() => handleDeleteParticipant(registration.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-2 text-sm">
+                              <div className="flex items-center">
+                                <User className="h-4 w-4 mr-2 text-gray-500" />
+                                <span className="text-gray-700">{registration.parentName}</span>
+                              </div>
+                              
+                              <div className="flex items-center">
+                                <Mail className="h-4 w-4 mr-2 text-gray-500" />
+                                <a href={`mailto:${registration.parentEmail}`} className="text-blue-600 hover:underline text-sm">
+                                  {registration.parentEmail}
+                                </a>
+                              </div>
+                              
+                              <div className="flex items-center">
+                                <Phone className="h-4 w-4 mr-2 text-gray-500" />
+                                <a href={`tel:${registration.parentPhone}`} className="text-blue-600 hover:underline">
+                                  {registration.parentPhone}
+                                </a>
+                              </div>
+                            </div>
+
+                            {registration.medicalInfo && (
+                              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
+                                <div className="flex items-center mb-1">
+                                  <span className="text-xs font-medium text-red-600 uppercase tracking-wide">Medical Info</span>
+                                </div>
+                                <p className="text-sm text-red-700">{registration.medicalInfo}</p>
+                              </div>
+                            )}
+
+                            {registration.experience && (
+                              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+                                <div className="flex items-center mb-1">
+                                  <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Experience</span>
+                                </div>
+                                <p className="text-sm text-blue-700">{registration.experience}</p>
+                              </div>
                             )}
                           </div>
-                          
-                          <div className="space-y-1 text-sm">
-                            <div className="flex items-center">
-                              <User className="h-3 w-3 mr-2 text-gray-400" />
-                              <span>{registration.parentName}</span>
-                            </div>
-                            
-                            <div className="flex items-center">
-                              <Mail className="h-3 w-3 mr-2 text-gray-400" />
-                              <a href={`mailto:${registration.parentEmail}`} className="text-blue-600 hover:underline text-xs">
-                                {registration.parentEmail}
-                              </a>
-                            </div>
-                            
-                            <div className="flex items-center">
-                              <Phone className="h-3 w-3 mr-2 text-gray-400" />
-                              <a href={`tel:${registration.parentPhone}`} className="text-blue-600 hover:underline">
-                                {registration.parentPhone}
-                              </a>
-                            </div>
-                          </div>
-
-                          {registration.medicalInfo && (
-                            <div className="bg-red-50 border border-red-200 rounded p-2">
-                              <span className="text-xs font-medium text-red-600 uppercase">Medical</span>
-                              <p className="text-xs text-red-700">{registration.medicalInfo}</p>
-                            </div>
-                          )}
-
-                          {registration.experience && (
-                            <div className="bg-blue-50 border border-blue-200 rounded p-2">
-                              <span className="text-xs font-medium text-blue-600 uppercase">Experience</span>
-                              <p className="text-xs text-blue-700">{registration.experience}</p>
-                            </div>
-                          )}
-                        </div>
+                        </CardContent>
                       </Card>
                       ))}
                     </div>
@@ -602,68 +840,96 @@ ${'─'.repeat(40)}`
           /* All Participants View */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredRegistrations.map((registration) => (
-              <Card key={registration.id} className="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">{registration.playerName}</h3>
-                    {registration.playerAge && (
-                      <span className="text-sm text-gray-500">({registration.playerAge}y)</span>
+              <Card key={registration.id} className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-semibold">{registration.playerName}</h3>
+                        {registration.playerAge && (
+                          <Badge variant="secondary" className="text-sm">
+                            {registration.playerAge}y
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-transparent p-2"
+                          onClick={() => handleEditParticipant(registration)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 bg-transparent p-2"
+                          onClick={() => handleDeleteParticipant(registration.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center">
+                        <User className="h-4 w-4 mr-2 text-gray-500" />
+                        <span className="text-gray-700">Parent: {registration.parentName}</span>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <Mail className="h-4 w-4 mr-2 text-gray-500" />
+                        <a href={`mailto:${registration.parentEmail}`} className="text-blue-600 hover:underline">
+                          {registration.parentEmail}
+                        </a>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <Phone className="h-4 w-4 mr-2 text-gray-500" />
+                        <a href={`tel:${registration.parentPhone}`} className="text-blue-600 hover:underline">
+                          {registration.parentPhone}
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="border-t pt-3">
+                      <h4 className="font-medium text-sm text-gray-700 mb-2">Session Details</h4>
+                      <div className="space-y-2 text-sm text-gray-600">
+                        <div className="font-medium">{registration.session.sport?.charAt(0).toUpperCase() + registration.session.sport?.slice(1)} - {registration.session.ageGroup}</div>
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                          <span>{formatSessionDate(registration.session.date)} at {registration.session.time}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                          <span>{registration.session.location}</span>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-2">
+                          Registered: {formatRegistrationDate(registration.createdAt)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {registration.medicalInfo && (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                        <div className="flex items-center mb-1">
+                          <span className="text-xs font-medium text-red-600 uppercase tracking-wide">Medical Info</span>
+                        </div>
+                        <p className="text-sm text-red-700">{registration.medicalInfo}</p>
+                      </div>
+                    )}
+
+                    {registration.experience && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <div className="flex items-center mb-1">
+                          <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Experience</span>
+                        </div>
+                        <p className="text-sm text-blue-700">{registration.experience}</p>
+                      </div>
                     )}
                   </div>
-
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center">
-                      <User className="h-4 w-4 mr-2 text-gray-500" />
-                      <span>Parent: {registration.parentName}</span>
-                    </div>
-                    
-                    <div className="flex items-center">
-                      <Mail className="h-4 w-4 mr-2 text-gray-500" />
-                      <a href={`mailto:${registration.parentEmail}`} className="text-blue-600 hover:underline">
-                        {registration.parentEmail}
-                      </a>
-                    </div>
-                    
-                    <div className="flex items-center">
-                      <Phone className="h-4 w-4 mr-2 text-gray-500" />
-                      <a href={`tel:${registration.parentPhone}`} className="text-blue-600 hover:underline">
-                        {registration.parentPhone}
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="border-t pt-3">
-                    <h4 className="font-medium text-sm text-gray-700 mb-2">Session Details</h4>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <div>{registration.session.sport?.charAt(0).toUpperCase() + registration.session.sport?.slice(1)} - {registration.session.ageGroup}</div>
-                      <div className="flex items-center">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        {formatSessionDate(registration.session.date)} at {registration.session.time}
-                      </div>
-                      <div className="flex items-center">
-                        <MapPin className="h-3 w-3 mr-1" />
-                        {registration.session.location}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Registered: {formatRegistrationDate(registration.createdAt)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {registration.medicalInfo && (
-                    <div className="bg-red-50 border border-red-200 rounded p-3">
-                      <span className="text-xs font-medium text-red-600 uppercase">Medical Info</span>
-                      <p className="text-sm text-red-700 mt-1">{registration.medicalInfo}</p>
-                    </div>
-                  )}
-
-                  {registration.experience && (
-                    <div className="bg-blue-50 border border-blue-200 rounded p-3">
-                      <span className="text-xs font-medium text-blue-600 uppercase">Experience</span>
-                      <p className="text-sm text-blue-700 mt-1">{registration.experience}</p>
-                    </div>
-                  )}
-                </div>
+                </CardContent>
               </Card>
             ))}
           </div>

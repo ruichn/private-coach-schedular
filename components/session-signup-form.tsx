@@ -373,7 +373,7 @@ END:VCALENDAR`
                   className="bg-white hover:bg-gray-50"
                 >
                   <Download className="h-4 w-4 mr-1" />
-                  Download .ics
+                  iCalendar
                 </Button>
               </div>
             </div>

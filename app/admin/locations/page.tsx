@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MapPin, Plus, Edit, Trash2, ArrowLeft } from "lucide-react"
+import AdminNavigation from "@/components/ui/admin-navigation"
 
 interface Location {
   id: number
@@ -151,35 +152,7 @@ export default function LocationsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="font-bold text-xl">
-            Coach Robe Admin
-          </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/admin" className="text-sm font-medium hover:text-gray-600">
-              Sessions
-            </Link>
-            <Link href="/admin/participants" className="text-sm font-medium hover:text-gray-600">
-              Participants
-            </Link>
-            <span className="text-sm font-medium text-blue-600">
-              Locations
-            </span>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/admin">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Admin
-              </Button>
-            </Link>
-            <Button variant="ghost" onClick={logout} className="text-red-600 hover:text-red-700">
-              Logout
-            </Button>
-          </div>
-        </div>
-      </header>
+      <AdminNavigation currentPage="/admin/locations" onLogout={logout} />
 
       <main className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
@@ -266,19 +239,20 @@ export default function LocationsPage() {
                       <MapPin className="h-5 w-5 text-blue-600 mr-2" />
                       <CardTitle className="text-lg">{location.name}</CardTitle>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1">
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
+                        className="bg-transparent p-2"
                         onClick={() => handleEdit(location)}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
+                        className="text-red-600 hover:text-red-700 bg-transparent p-2"
                         onClick={() => handleDelete(location.id)}
-                        className="text-red-600 hover:text-red-700"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

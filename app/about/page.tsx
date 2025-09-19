@@ -3,35 +3,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Trophy, Target, Users, Award, MapPin, Calendar } from "lucide-react"
+import Navigation from "@/components/ui/navigation"
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="font-bold text-xl">
-            Coach Robe Volleyball
-          </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/sessions" className="text-sm font-medium hover:text-gray-600">
-              Sessions
-            </Link>
-            <Link href="/about" className="text-sm font-medium text-blue-600">
-              About
-            </Link>
-            <Link href="/contact" className="text-sm font-medium hover:text-gray-600">
-              Contact
-            </Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/admin">
-              <Button variant="outline" size="sm">
-                Coach Login
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Navigation currentPage="/about" />
 
       <main className="container mx-auto px-4 py-8">
         {/* Header Section */}

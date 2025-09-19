@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Calendar, Clock, MapPin, Users, Plus, Edit, Trash2, Eye, EyeOff, UserCheck, X, Mail, Phone, FileText, Download, Share2 } from "lucide-react"
 import { formatSessionDate, formatDateForInput } from "@/lib/date-utils"
+import AdminNavigation from "@/components/ui/admin-navigation"
 
 interface Session {
   id: number
@@ -39,6 +40,7 @@ export default function AdminPage() {
   const router = useRouter()
   const { isAuthenticated, logout } = useAdminAuth()
   const [sessions, setSessions] = useState<Session[]>([])
+  const [locations, setLocations] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingSession, setEditingSession] = useState<Session | null>(null)
@@ -73,6 +75,7 @@ export default function AdminPage() {
   useEffect(() => {
     if (isAdminAuthenticated()) {
       fetchSessions()
+      fetchLocations()
     }
   }, [])
 
@@ -107,6 +110,17 @@ export default function AdminPage() {
     }
   }
 
+  const fetchLocations = async () => {
+    try {
+      const response = await fetch('/api/locations')
+      if (response.ok) {
+        const data = await response.json()
+        setLocations(data)
+      }
+    } catch (error) {
+      console.error('Error fetching locations:', error)
+    }
+  }
 
   const fetchSessionPlayers = async (sessionId: number) => {
     try {
@@ -137,7 +151,7 @@ export default function AdminPage() {
 👥 Registered Players (${session.playerNames.length}/${session.maxParticipants}):
 ${session.playerNames.length > 0 ? session.playerNames.map((name, index) => `${index + 1}. ${name}`).join('\n') : 'No players registered yet'}
 
-${session.price > 0 ? `💰 Price: $${session.price}` : '🆓 Free session'}
+${session.price > 0 ? `💰 Price: $${session.price}` : ''}
 
 Register at: ${window.location.origin}/sessions/${session.id}/signup`
 
@@ -383,19 +397,19 @@ Register at: ${window.location.origin}/sessions/${session.id}/signup`
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-white border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="font-bold text-xl">
-            Coach Robe Admin
+            Coach Robe Sports Training
           </Link>
           <nav className="hidden md:flex items-center gap-6">
-            <span className="text-sm font-medium text-blue-600">
+            <span className="text-sm font-medium text-blue-600 font-semibold">
               Sessions
             </span>
-            <Link href="/admin/participants" className="text-sm font-medium hover:text-gray-600">
+            <Link href="/admin/participants" className="text-sm font-medium hover:text-gray-600 transition-colors">
               Participants
             </Link>
-            <Link href="/admin/locations" className="text-sm font-medium hover:text-gray-600">
+            <Link href="/admin/locations" className="text-sm font-medium hover:text-gray-600 transition-colors">
               Locations
             </Link>
           </nav>
@@ -409,7 +423,7 @@ Register at: ${window.location.origin}/sessions/${session.id}/signup`
             </Button>
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
@@ -820,14 +834,6 @@ Register at: ${window.location.origin}/sessions/${session.id}/signup`
                         )}
                       </div>
                       <div className="flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="bg-transparent p-2"
-                          onClick={() => shareSession(session)}
-                        >
-                          <Share2 className="h-4 w-4" />
-                        </Button>
                         <Button 
                           size="sm" 
                           variant="outline" 
@@ -843,6 +849,14 @@ Register at: ${window.location.origin}/sessions/${session.id}/signup`
                           onClick={() => deleteSession(session.id)}
                         >
                           <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="bg-transparent p-2"
+                          onClick={() => shareSession(session)}
+                        >
+                          <Share2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
