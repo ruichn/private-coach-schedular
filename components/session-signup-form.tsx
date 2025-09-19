@@ -50,8 +50,6 @@ export default function SessionSignupForm({ sessionId, sessionPrice, sessionData
   const generateCalendarEvent = (format: 'google' | 'outlook' | 'ics') => {
     if (!sessionData) return
 
-    console.log('Session data:', sessionData)
-    console.log('Original date:', sessionData.date, 'Type:', typeof sessionData.date)
 
     // Handle date creation more safely, avoiding timezone issues
     let startDate: Date
@@ -59,49 +57,33 @@ export default function SessionSignupForm({ sessionId, sessionPrice, sessionData
     if (sessionData.date instanceof Date) {
       // If it's already a Date object, check if it needs timezone correction
       const existingDate = sessionData.date
-      console.log('Existing Date object:', existingDate)
       
       // Check if the date appears to be off by timezone (common issue)
       // If the time shows as 17:00:00 (5 PM) but should be start of day, fix it
       if (existingDate.getHours() !== 0 || existingDate.getMinutes() !== 0) {
-        console.log('Date has time component, creating date-only version')
         // Create a new date using just the date components in local timezone
         startDate = new Date(existingDate.getFullYear(), existingDate.getMonth(), existingDate.getDate())
-        console.log('Corrected date:', startDate)
       } else {
         startDate = new Date(existingDate)
       }
     } else {
       // If it's a string, parse it properly and avoid timezone issues
       const dateStr = sessionData.date.toString()
-      console.log('Parsing date string:', dateStr)
       
       // If it's an ISO string, parse it as local date to avoid timezone conversion
       if (dateStr.includes('T') || dateStr.includes('Z')) {
         // Extract just the date part (YYYY-MM-DD) and create local date
         const datePart = dateStr.split('T')[0]
-        console.log('Extracted date part:', datePart)
         const [year, month, day] = datePart.split('-').map(Number)
-        console.log('Date parts:', { year, month, day })
         startDate = new Date(year, month - 1, day, 0, 0, 0, 0) // month is 0-indexed, set time to start of day
-        console.log('Created local date from ISO:', startDate)
       } else if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
         // Simple YYYY-MM-DD format
         const [year, month, day] = dateStr.split('-').map(Number)
         startDate = new Date(year, month - 1, day, 0, 0, 0, 0)
-        console.log('Created local date from simple format:', startDate)
       } else {
         startDate = new Date(dateStr)
-        console.log('Created date using Date constructor:', startDate)
       }
     }
-    
-    console.log('Created startDate:', startDate, 'Valid:', !isNaN(startDate.getTime()))
-    console.log('Date components:', {
-      year: startDate.getFullYear(),
-      month: startDate.getMonth() + 1, // Display month as 1-indexed
-      day: startDate.getDate()
-    })
     
     // Validate the date
     if (isNaN(startDate.getTime())) {
@@ -111,62 +93,64 @@ export default function SessionSignupForm({ sessionId, sessionPrice, sessionData
     }
 
     // Parse time range format like "5:30 PM - 7:00 PM"
-    const parseTime = (timeString: string) => {
-      console.log('Parsing time string:', timeString)
-      
-      // Extract start time from range (before the " - ")
-      let startTimeStr = timeString.split(' - ')[0].trim()
-      console.log('Start time string:', startTimeStr)
-      
-      // Parse AM/PM format
-      const isPM = startTimeStr.toLowerCase().includes('pm')
-      const isAM = startTimeStr.toLowerCase().includes('am')
-      
-      // Remove AM/PM
-      startTimeStr = startTimeStr.replace(/\s*(am|pm)/i, '')
-      
-      const [hourStr, minuteStr] = startTimeStr.split(':')
-      let hours = parseInt(hourStr, 10)
-      const minutes = parseInt(minuteStr, 10) || 0
-      
-      // Convert to 24-hour format
-      if (isPM && hours !== 12) {
-        hours += 12
-      } else if (isAM && hours === 12) {
-        hours = 0
+    const parseTimeRange = (timeString: string) => {
+      const parts = timeString.split(' - ')
+      if (parts.length !== 2) {
+        throw new Error('Invalid time range format')
       }
       
-      console.log('Parsed time:', { hours, minutes, isPM, isAM })
-      return { hours, minutes }
+      const parseTime = (timeStr: string) => {
+        const trimmed = timeStr.trim()
+        const isPM = trimmed.toLowerCase().includes('pm')
+        const isAM = trimmed.toLowerCase().includes('am')
+        
+        // Remove AM/PM
+        const cleanTime = trimmed.replace(/\s*(am|pm)/i, '')
+        const [hourStr, minuteStr] = cleanTime.split(':')
+        let hours = parseInt(hourStr, 10)
+        const minutes = parseInt(minuteStr, 10) || 0
+        
+        // Convert to 24-hour format
+        if (isPM && hours !== 12) {
+          hours += 12
+        } else if (isAM && hours === 12) {
+          hours = 0
+        }
+        
+        return { hours, minutes }
+      }
+      
+      const startTime = parseTime(parts[0])
+      const endTime = parseTime(parts[1])
+      
+      return { startTime, endTime }
     }
     
-    let hours: number, minutes: number
+    let startTime: { hours: number, minutes: number }
+    let endTime: { hours: number, minutes: number }
     
     try {
-      const parsedTime = parseTime(sessionData.time)
-      hours = parsedTime.hours
-      minutes = parsedTime.minutes
+      const parsedTimes = parseTimeRange(sessionData.time)
+      startTime = parsedTimes.startTime
+      endTime = parsedTimes.endTime
       
       // Validate hour and minute ranges
-      if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-        console.error('Time values out of range:', { hours, minutes })
+      if (startTime.hours < 0 || startTime.hours > 23 || startTime.minutes < 0 || startTime.minutes > 59 ||
+          endTime.hours < 0 || endTime.hours > 23 || endTime.minutes < 0 || endTime.minutes > 59) {
+        console.error('Time values out of range:', { startTime, endTime })
         alert('Unable to create calendar event due to invalid time values.')
         return
       }
-      
-      console.log('Final parsed time:', { hours, minutes })
     } catch (error) {
       console.error('Error parsing time:', error, 'Time string:', sessionData.time)
       alert('Unable to create calendar event due to invalid time format.')
       return
     }
     
-    startDate.setHours(hours, minutes, 0, 0)
-    console.log('Start date after setting time:', startDate, 'Valid:', !isNaN(startDate.getTime()))
+    startDate.setHours(startTime.hours, startTime.minutes, 0, 0)
     
     const endDate = new Date(startDate)
-    endDate.setHours(startDate.getHours() + 1, startDate.getMinutes(), 0, 0) // Assume 1 hour duration
-    console.log('End date:', endDate, 'Valid:', !isNaN(endDate.getTime()))
+    endDate.setHours(endTime.hours, endTime.minutes, 0, 0) // Use actual end time
     
     // Validate both dates before proceeding
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
@@ -206,10 +190,6 @@ export default function SessionSignupForm({ sessionId, sessionPrice, sessionData
       }
       
       try {
-        console.log('Creating ICS file...')
-        console.log('Start date for formatting:', startDate)
-        console.log('End date for formatting:', endDate)
-        
         const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Coach Robe Sports Training//EN
@@ -223,17 +203,13 @@ LOCATION:${location}
 END:VEVENT
 END:VCALENDAR`
         
-        console.log('ICS content created:', icsContent.substring(0, 200) + '...')
-        
         const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' })
         const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.href = url
         link.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.ics`
-        console.log('Triggering download...')
         link.click()
         URL.revokeObjectURL(url)
-        console.log('ICS download completed successfully')
       } catch (error) {
         console.error('Error creating ICS file:', error)
         alert('Unable to create calendar file. Please try Google Calendar or Outlook instead.')

@@ -20,10 +20,10 @@ export async function POST(
     }
     
     const {
-      playerName,
+      playerName: rawPlayerName,
       playerAge,
-      parentName,
-      parentEmail,
+      parentName: rawParentName,
+      parentEmail: rawParentEmail,
       parentPhone,
       emergencyContact,
       emergencyPhone,
@@ -31,6 +31,11 @@ export async function POST(
       experience,
       specialNotes,
     } = validation.data
+
+    // Trim whitespace from all text inputs to prevent issues with autocomplete
+    const playerName = rawPlayerName.trim()
+    const parentName = rawParentName.trim()
+    const parentEmail = rawParentEmail.trim()
 
     const { id } = await params
     const sessionId = Number(id)
@@ -210,17 +215,32 @@ export async function DELETE(
 
     const { id } = await params
     const sessionId = Number(id)
-    console.log('Cancellation request for session:', sessionId)
+    
+    const trimmedPlayerName = playerName?.trim()
+    const trimmedEmail = email?.trim()
+    
 
-    // Find the registration with case-insensitive matching
+    // Find the registration with case-insensitive matching and handle whitespace
     const registration = await prisma.registration.findFirst({
       where: {
         sessionId: sessionId,
-        parentEmail: email?.toLowerCase(), // Case-insensitive email lookup
-        playerName: {
-          equals: playerName,
-          mode: 'insensitive' // Case-insensitive name lookup
-        }
+        parentEmail: trimmedEmail?.toLowerCase(), // Case-insensitive email lookup
+        OR: [
+          // Try exact match first
+          {
+            playerName: {
+              equals: trimmedPlayerName,
+              mode: 'insensitive' // Case-insensitive name matching
+            }
+          },
+          // Also try matching with potential trailing space (for existing data)
+          {
+            playerName: {
+              equals: trimmedPlayerName + ' ',
+              mode: 'insensitive'
+            }
+          }
+        ]
       }
     })
 

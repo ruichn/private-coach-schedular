@@ -42,20 +42,24 @@ export default function DynamicSessionSignup({ initialSession }: DynamicSessionS
       if (response.ok) {
         const updatedSession = await response.json()
         // Parse date safely to avoid timezone issues
-        const parseDate = (dateString: string) => {
-          if (dateString.includes('T') || dateString.includes('Z')) {
-            // Extract just the date part (YYYY-MM-DD) and create local date
-            const datePart = dateString.split('T')[0]
+        let parsedDate: Date
+        if (typeof updatedSession.date === 'string') {
+          // If it's an ISO string, extract just the date part and create local date
+          if (updatedSession.date.includes('T') || updatedSession.date.includes('Z')) {
+            const datePart = updatedSession.date.split('T')[0]
             const [year, month, day] = datePart.split('-').map(Number)
-            return new Date(year, month - 1, day) // month is 0-indexed
+            parsedDate = new Date(year, month - 1, day, 0, 0, 0, 0) // month is 0-indexed
+          } else {
+            parsedDate = new Date(updatedSession.date)
           }
-          return new Date(dateString)
+        } else {
+          parsedDate = new Date(updatedSession.date)
         }
         
         setSession({
           ...updatedSession,
           currentParticipants: updatedSession.registrations?.length || updatedSession.currentParticipants,
-          date: parseDate(updatedSession.date)
+          date: parsedDate
         })
       }
     } catch (error) {
