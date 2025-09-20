@@ -141,19 +141,12 @@ export default function AdminPage() {
   }
 
   const shareSession = (session: Session) => {
-    const sessionInfo = `🏐 ${session.sport?.charAt(0).toUpperCase() + session.sport?.slice(1)} Training - ${session.ageGroup}
-
-📅 Date: ${formatSessionDate(session.date)}
-⏰ Time: ${session.time}
-📍 Location: ${session.location}
-📍 Address: ${session.address}
-
+    const sessionInfo = `🗓️ Date: ${formatSessionDate(session.date)} at ${session.time}
+📌 Location: ${session.location} - ${session.address}
 👥 Registered Players (${session.playerNames.length}/${session.maxParticipants}):
 ${session.playerNames.length > 0 ? session.playerNames.map((name, index) => `${index + 1}. ${name}`).join('\n') : 'No players registered yet'}
-
-${session.price > 0 ? `💰 Price: $${session.price}` : ''}
-
-Register at: ${window.location.origin}/sessions/${session.id}/signup`
+${session.price > 0 ? `\n💵 Price: $${session.price}` : ''}
+🔗 Register at: ${window.location.origin}/sessions/${session.id}/signup`
 
     if (navigator.share) {
       navigator.share({
