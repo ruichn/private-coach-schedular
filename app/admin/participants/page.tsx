@@ -110,11 +110,12 @@ export default function ParticipantsPage() {
       })
       if (sessionsResponse.ok) {
         const sessionsData = await sessionsResponse.json()
-        setSessions(sessionsData)
+        const visibleSessions = sessionsData.filter((session: SessionWithRegistrations) => session.isVisible !== false)
+        setSessions(visibleSessions)
 
         // Extract all registrations from sessions data for all-participants view
         const allRegistrationsFromSessions: Registration[] = []
-        sessionsData.forEach((session: SessionWithRegistrations) => {
+        visibleSessions.forEach((session: SessionWithRegistrations) => {
           if (session.registrations) {
             session.registrations.forEach((reg: BaseRegistration) => {
               allRegistrationsFromSessions.push({
@@ -137,11 +138,101 @@ export default function ParticipantsPage() {
         })
         console.log('Extracted registrations from sessions:', allRegistrationsFromSessions.length, 'registrations')
         setAllRegistrations(allRegistrationsFromSessions)
+        
+        // Automatically archive past sessions
+        await autoArchivePastSessions(sessionsData)
       }
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const autoArchivePastSessions = async (sessions: SessionWithRegistrations[]) => {
+    try {
+      const yesterday = new Date()
+      yesterday.setDate(yesterday.getDate() - 1)
+      yesterday.setHours(0, 0, 0, 0)
+      
+      console.log('Auto-archive debug - Yesterday midnight:', yesterday.toISOString())
+      
+      const pastSessions = sessions.filter(session => {
+        const sessionDate = new Date(session.date)
+        console.log(`Checking session ${session.id}: ${session.date} -> ${sessionDate.toISOString()} <= ${yesterday.toISOString()}? ${sessionDate <= yesterday}`)
+        return sessionDate <= yesterday && session.isVisible !== false
+      })
+
+      console.log(`Found ${pastSessions.length} past sessions to archive:`, pastSessions.map(s => ({id: s.id, date: s.date, visible: s.isVisible})))
+
+      if (pastSessions.length > 0) {
+        console.log(`Auto-archiving ${pastSessions.length} past sessions from participants page`)
+        
+        for (const session of pastSessions) {
+          const response = await fetch(`/api/sessions/${session.id}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              sport: session.sport,
+              ageGroup: session.ageGroup,
+              date: typeof session.date === 'string' ? session.date.split('T')[0] : session.date,
+              time: session.time,
+              location: session.location,
+              address: session.address,
+              maxParticipants: session.maxParticipants,
+              price: session.price,
+              focus: session.focus,
+              isVisible: false
+            })
+          })
+          
+          if (!response.ok) {
+            console.error(`Failed to archive session ${session.id}:`, await response.text())
+          } else {
+            console.log(`Successfully archived session ${session.id}`)
+          }
+        }
+        
+        // Refresh data after archiving
+        const sessionsResponse = await fetch('/api/sessions?includeHidden=true', {
+          credentials: 'include'
+        })
+        if (sessionsResponse.ok) {
+          const sessionsData = await sessionsResponse.json()
+          const visibleSessions = sessionsData.filter((session: SessionWithRegistrations) => session.isVisible !== false)
+          setSessions(visibleSessions)
+
+          // Re-extract registrations
+          const allRegistrationsFromSessions: Registration[] = []
+          visibleSessions.forEach((session: SessionWithRegistrations) => {
+            if (session.registrations) {
+              session.registrations.forEach((reg: BaseRegistration) => {
+                allRegistrationsFromSessions.push({
+                  ...reg,
+                  session: {
+                    id: session.id,
+                    sport: session.sport,
+                    ageGroup: session.ageGroup,
+                    date: session.date,
+                    time: session.time,
+                    location: session.location,
+                    address: session.address,
+                    focus: session.focus,
+                    price: session.price,
+                    maxParticipants: session.maxParticipants
+                  }
+                })
+              })
+            }
+          })
+          setAllRegistrations(allRegistrationsFromSessions)
+        }
+      }
+    } catch (error) {
+      console.error('Error auto-archiving past sessions:', error)
     }
   }
 

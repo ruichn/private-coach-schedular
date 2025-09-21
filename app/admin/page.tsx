@@ -84,29 +84,106 @@ export default function AdminPage() {
       const response = await fetch('/api/sessions?includeHidden=true')
       if (response.ok) {
         const data = await response.json()
-        const formattedSessions = data.map((session: any) => ({
-          id: session.id,
-          sport: session.sport || 'volleyball', // Default to volleyball for existing sessions
-          ageGroup: session.ageGroup,
-          date: session.date.split('T')[0], // Keep as YYYY-MM-DD for form input
-          time: session.time,
-          location: session.location,
-          address: session.address,
-          maxParticipants: session.maxParticipants,
-          currentParticipants: session.registrations.length,
-          price: session.price,
-          focus: session.focus,
-          status: session.registrations.length >= session.maxParticipants ? 'full' : 'open',
-          isVisible: session.isVisible !== undefined ? session.isVisible : true, // Default to visible for existing sessions
-          playerNames: session.registrations.map((reg: any) => reg.playerName),
-        }))
+        const formattedSessions = data
+          .filter((session: any) => session.isVisible !== false) // Hide archived sessions
+          .map((session: any) => ({
+            id: session.id,
+            sport: session.sport || 'volleyball', // Default to volleyball for existing sessions
+            ageGroup: session.ageGroup,
+            date: session.date.split('T')[0], // Keep as YYYY-MM-DD for form input
+            time: session.time,
+            location: session.location,
+            address: session.address,
+            maxParticipants: session.maxParticipants,
+            currentParticipants: session.registrations.length,
+            price: session.price,
+            focus: session.focus,
+            status: session.registrations.length >= session.maxParticipants ? 'full' : 'open',
+            isVisible: session.isVisible !== undefined ? session.isVisible : true, // Default to visible for existing sessions
+            playerNames: session.registrations.map((reg: any) => reg.playerName),
+          }))
         setSessions(formattedSessions)
+        
+        // Automatically archive past sessions
+        await autoArchivePastSessions(formattedSessions)
       }
     } catch (error) {
       console.error('Error fetching sessions:', error)
       alert('Error loading sessions')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const autoArchivePastSessions = async (sessions: Session[]) => {
+    try {
+      const yesterday = new Date()
+      yesterday.setDate(yesterday.getDate() - 1)
+      yesterday.setHours(0, 0, 0, 0)
+      
+      const pastSessions = sessions.filter(session => {
+        const sessionDate = new Date(session.date + 'T00:00:00')
+        return sessionDate <= yesterday && session.isVisible
+      })
+
+      if (pastSessions.length > 0) {
+        console.log(`Auto-archiving ${pastSessions.length} past sessions`)
+        
+        for (const session of pastSessions) {
+          const response = await fetch(`/api/sessions/${session.id}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              sport: session.sport,
+              ageGroup: session.ageGroup,
+              date: session.date,
+              time: session.time,
+              location: session.location,
+              address: session.address,
+              maxParticipants: session.maxParticipants,
+              price: session.price,
+              focus: session.focus,
+              isVisible: false
+            })
+          })
+          
+          if (!response.ok) {
+            console.error(`Failed to archive session ${session.id}:`, await response.text())
+          } else {
+            console.log(`Successfully archived session ${session.id}`)
+          }
+        }
+        
+        // Refresh sessions after archiving
+        const response = await fetch('/api/sessions?includeHidden=true')
+        if (response.ok) {
+          const data = await response.json()
+          const formattedSessions = data
+            .filter((session: any) => session.isVisible !== false) // Hide archived sessions
+            .map((session: any) => ({
+              id: session.id,
+              sport: session.sport || 'volleyball',
+              ageGroup: session.ageGroup,
+              date: session.date.split('T')[0],
+              time: session.time,
+              location: session.location,
+              address: session.address,
+              maxParticipants: session.maxParticipants,
+              currentParticipants: session.registrations.length,
+              price: session.price,
+              focus: session.focus,
+              status: session.registrations.length >= session.maxParticipants ? 'full' : 'open',
+              isVisible: session.isVisible !== undefined ? session.isVisible : true,
+              playerNames: session.registrations.map((reg: any) => reg.playerName),
+            }))
+          setSessions(formattedSessions)
+        }
+      }
+    } catch (error) {
+      console.error('Error auto-archiving past sessions:', error)
     }
   }
 
