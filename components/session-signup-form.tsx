@@ -36,9 +36,7 @@ export default function SessionSignupForm({ sessionId, sessionPrice, sessionData
     parentPhone: "",
     emergencyContact: "",
     emergencyPhone: "",
-    medicalInfo: "",
     experience: "",
-    specialNotes: "",
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -295,9 +293,7 @@ END:VCALENDAR`
           parentPhone: "",
           emergencyContact: "",
           emergencyPhone: "",
-          medicalInfo: "",
           experience: "",
-          specialNotes: "",
         })
       } else {
         const error = await response.json()
@@ -441,9 +437,9 @@ END:VCALENDAR`
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Player Information */}
+      {/* Required Information - Top Priority */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold border-b pb-2">Player Information</h3>
+        <h3 className="text-lg font-semibold border-b pb-2">Required Information</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -457,45 +453,15 @@ END:VCALENDAR`
             />
           </div>
           <div>
-            <Label htmlFor="playerAge">Player Age (Optional)</Label>
+            <Label htmlFor="parentName">Parent/Guardian Name *</Label>
             <Input
-              id="playerAge"
-              name="playerAge"
-              type="number"
-              min="10"
-              max="18"
-              value={formData.playerAge}
+              id="parentName"
+              name="parentName"
+              value={formData.parentName}
               onChange={handleInputChange}
-              placeholder="Optional"
+              required
             />
           </div>
-        </div>
-
-        <div>
-          <Label htmlFor="experience">Volleyball Experience</Label>
-          <Textarea
-            id="experience"
-            name="experience"
-            placeholder="Describe the player's volleyball experience (beginner, played for 1 year, etc.)"
-            value={formData.experience}
-            onChange={handleInputChange}
-          />
-        </div>
-      </div>
-
-      {/* Parent/Guardian Information */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold border-b pb-2">Parent/Guardian Information</h3>
-
-        <div>
-          <Label htmlFor="parentName">Parent/Guardian Name *</Label>
-          <Input
-            id="parentName"
-            name="parentName"
-            value={formData.parentName}
-            onChange={handleInputChange}
-            required
-          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -526,9 +492,41 @@ END:VCALENDAR`
         </div>
       </div>
 
+      {/* Additional Player Information */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold border-b pb-2">Additional Player Information</h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="playerAge">Player Age</Label>
+            <Input
+              id="playerAge"
+              name="playerAge"
+              type="number"
+              min="10"
+              max="18"
+              value={formData.playerAge}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div></div>
+        </div>
+
+        <div>
+          <Label htmlFor="experience">Volleyball Experience</Label>
+          <Textarea
+            id="experience"
+            name="experience"
+            placeholder="Describe the player's volleyball experience (beginner, played for 1 year, etc.)"
+            value={formData.experience}
+            onChange={handleInputChange}
+          />
+        </div>
+      </div>
+
       {/* Emergency Contact */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold border-b pb-2">Emergency Contact (Optional)</h3>
+        <h3 className="text-lg font-semibold border-b pb-2">Emergency Contact</h3>
         <p className="text-sm text-gray-600">Provide emergency contact information if different from parent/guardian above.</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -539,7 +537,6 @@ END:VCALENDAR`
               name="emergencyContact"
               value={formData.emergencyContact}
               onChange={handleInputChange}
-              placeholder="Optional"
             />
           </div>
           <div>
@@ -557,32 +554,6 @@ END:VCALENDAR`
         </div>
       </div>
 
-      {/* Medical Information */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold border-b pb-2">Medical Information</h3>
-
-        <div>
-          <Label htmlFor="medicalInfo">Medical Conditions/Allergies</Label>
-          <Textarea
-            id="medicalInfo"
-            name="medicalInfo"
-            placeholder="Please list any medical conditions, allergies, or medications the coach should be aware of"
-            value={formData.medicalInfo}
-            onChange={handleInputChange}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="specialNotes">Special Notes</Label>
-          <Textarea
-            id="specialNotes"
-            name="specialNotes"
-            placeholder="Any additional information or special requests"
-            value={formData.specialNotes}
-            onChange={handleInputChange}
-          />
-        </div>
-      </div>
 
       <div className="pt-6 border-t">
         {sessionPrice > 0 && (
