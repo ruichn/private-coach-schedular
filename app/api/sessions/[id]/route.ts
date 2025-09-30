@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendSessionUpdateToAllPlayers } from '@/lib/email'
 
 export async function GET(
   _request: Request,
@@ -36,7 +37,7 @@ export async function PATCH(
     console.log('PATCH request body:', body)
     console.log('Session ID:', id)
     
-    // Get current session to preserve currentParticipants
+    // Get current session to preserve currentParticipants and detect changes
     const currentSession = await prisma.session.findUnique({
       where: { id: Number(id) },
       include: { registrations: true }
@@ -44,6 +45,18 @@ export async function PATCH(
 
     if (!currentSession) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
+    }
+    
+    // Store original session data for comparison
+    const oldSessionData = {
+      date: currentSession.date.toISOString(),
+      time: currentSession.time,
+      location: currentSession.location,
+      address: currentSession.address,
+      focus: currentSession.focus,
+      price: currentSession.price,
+      ageGroup: currentSession.ageGroup,
+      sport: currentSession.sport
     }
     
     // Ensure date is properly formatted for Prisma and preserve currentParticipants
@@ -63,6 +76,33 @@ export async function PATCH(
         registrations: true,
       },
     })
+
+    // Send update emails to registered players if there are significant changes
+    try {
+      const newSessionData = {
+        date: session.date.toISOString(),
+        time: session.time,
+        location: session.location,
+        address: session.address,
+        focus: session.focus,
+        price: session.price,
+        ageGroup: session.ageGroup,
+        sport: session.sport
+      }
+
+      const emailResult = await sendSessionUpdateToAllPlayers(
+        Number(id),
+        oldSessionData,
+        newSessionData
+      )
+
+      if (emailResult.success && emailResult.emailsSent > 0) {
+        console.log(`Session update emails sent: ${emailResult.emailsSent} emails sent to registered players`)
+      }
+    } catch (emailError) {
+      console.error('Failed to send session update emails:', emailError)
+      // Don't fail the session update if emails fail
+    }
 
     return NextResponse.json(session)
   } catch (error) {

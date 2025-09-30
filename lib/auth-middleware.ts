@@ -2,10 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyAdminToken } from './security'
 
 export function requireAdminAuth(request: NextRequest): NextResponse | null {
-  const token = request.headers.get('authorization')?.replace('Bearer ', '') ||
-               request.cookies.get('admin-token')?.value
+  const authHeader = request.headers.get('authorization')
+  const cookieToken = request.cookies.get('admin-token')?.value
+  const token = authHeader?.replace('Bearer ', '') || cookieToken
+
+  console.log('Auth check - Auth header:', authHeader ? 'Present' : 'Missing')
+  console.log('Auth check - Cookie token:', cookieToken ? 'Present' : 'Missing')
 
   if (!token) {
+    console.log('Auth check - No token found')
     return NextResponse.json(
       { error: 'Authentication required' },
       { status: 401 }
@@ -15,12 +20,14 @@ export function requireAdminAuth(request: NextRequest): NextResponse | null {
   const session = verifyAdminToken(token)
   
   if (!session) {
+    console.log('Auth check - Token verification failed')
     return NextResponse.json(
       { error: 'Invalid or expired session' },
       { status: 401 }
     )
   }
 
+  console.log('Auth check - Token valid')
   // Token is valid, allow request to continue
   return null
 }
