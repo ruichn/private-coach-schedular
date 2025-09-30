@@ -138,6 +138,7 @@ export async function POST(
       const cancellationUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/cancel/${cancellationToken}`
       
       await sendRegistrationConfirmation({
+        sessionId,
         playerName,
         parentName,
         parentEmail,

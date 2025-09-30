@@ -5,9 +5,10 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, MapPin, Users } from "lucide-react"
+import { Calendar, Clock, MapPin, Users, CalendarPlus } from "lucide-react"
 import { formatSessionDate } from "@/lib/date-utils"
 import Navigation from "@/components/ui/navigation"
+import { AddToCalendar } from "@/components/ui/add-to-calendar"
 
 interface Session {
   id: number
@@ -108,7 +109,23 @@ export default function SessionsPage() {
 
               <CardContent className="space-y-3">
                 <div className="flex items-center text-sm">
-                  <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                  <AddToCalendar 
+                    session={{
+                      id: session.id,
+                      sport: session.sport,
+                      ageGroup: session.ageGroup,
+                      date: session.date,
+                      time: session.time,
+                      location: session.location,
+                      focus: session.focus,
+                      price: session.price
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="h-4 w-4 p-0 mr-2 hover:bg-blue-50 rounded transition-colors cursor-pointer animate-pulse"
+                  >
+                    <CalendarPlus className="h-4 w-4 text-gray-500 hover:text-blue-600" />
+                  </AddToCalendar>
                   <span>{formatSessionDate(session.date)}</span>
                 </div>
 

@@ -5,15 +5,17 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Users, Calendar, ArrowRight, MapPin, Clock } from "lucide-react"
+import { Users, Calendar, ArrowRight, MapPin, Clock, CalendarPlus } from "lucide-react"
 import { formatSessionDateShort } from "@/lib/date-utils"
 import Navigation from "@/components/ui/navigation"
+import { AddToCalendar } from "@/components/ui/add-to-calendar"
 
 interface Session {
   id: number
   sport: string
   ageGroup: string
   date: string
+  originalDate: string
   time: string
   location: string
   participants: number
@@ -42,6 +44,7 @@ export default function Home() {
           sport: session.sport || 'volleyball', // Default to volleyball for existing sessions
           ageGroup: session.ageGroup,
           date: formatSessionDateShort(session.date),
+          originalDate: session.date, // Keep original date for calendar
           time: session.time,
           location: session.location,
           participants: session.currentParticipants,
@@ -130,7 +133,23 @@ export default function Home() {
                   <CardContent>
                     <div className="space-y-2 mb-4">
                       <div className="flex items-center text-sm">
-                        <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                        <AddToCalendar 
+                          session={{
+                            id: session.id,
+                            sport: session.sport,
+                            ageGroup: session.ageGroup,
+                            date: session.originalDate,
+                            time: session.time,
+                            location: session.location,
+                            focus: session.focus,
+                            price: session.price
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 mr-2 hover:bg-blue-50 rounded transition-colors cursor-pointer animate-pulse"
+                        >
+                          <CalendarPlus className="h-4 w-4 text-gray-500 hover:text-blue-600" />
+                        </AddToCalendar>
                         <span>{session.date}</span>
                       </div>
                       <div className="flex items-center text-sm">

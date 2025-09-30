@@ -89,3 +89,92 @@ Update data: {
  ✓ Compiled in 65ms (442 modules)
  ✓ Compiled in 57ms (442 modules)
  ✓ Compiled in 61ms (442 modules)
+ ✓ Compiled /admin in 215ms (509 modules)
+ GET /admin 200 in 348ms
+ ✓ Compiled /api/locations in 53ms (622 modules)
+ ✓ Compiled in 0ms (624 modules)
+ ✓ Compiled in 0ms (624 modules)
+ ✓ Compiled in 0ms (624 modules)
+ GET /admin 200 in 257ms
+ GET /api/locations 200 in 989ms
+ GET /api/sessions?includeHidden=true 200 in 1355ms
+ ✓ Compiled / in 86ms (632 modules)
+ GET / 200 in 111ms
+ GET /api/sessions 200 in 447ms
+ GET /api/sessions 200 in 171ms
+ ✓ Compiled in 149ms (442 modules)
+ ✓ Compiled in 55ms (442 modules)
+ ✓ Compiled in 204ms (959 modules)
+ ✓ Compiled in 355ms (979 modules)
+ ✓ Compiled /sessions in 105ms (974 modules)
+ GET /sessions 200 in 180ms
+ ✓ Compiled /api/sessions in 94ms (646 modules)
+ GET /api/sessions 200 in 1003ms
+ GET /api/sessions 200 in 162ms
+ GET /admin 200 in 25ms
+ ✓ Compiled /api/locations in 86ms (648 modules)
+ GET /api/sessions?includeHidden=true 200 in 319ms
+ GET /api/sessions?includeHidden=true 200 in 151ms
+ GET /api/locations 200 in 542ms
+ GET /api/locations 200 in 45ms
+ GET / 200 in 31ms
+ GET /api/sessions 200 in 367ms
+ GET /api/sessions 200 in 142ms
+ GET /sessions 200 in 8ms
+ GET /api/sessions 200 in 157ms
+ GET /api/sessions 200 in 134ms
+ ✓ Compiled in 390ms (982 modules)
+ ✓ Compiled in 128ms (982 modules)
+ ✓ Compiled in 132ms (982 modules)
+ ✓ Compiled in 135ms (982 modules)
+ ✓ Compiled in 87ms (982 modules)
+ ✓ Compiled in 99ms (982 modules)
+ ✓ Compiled in 124ms (982 modules)
+ ✓ Compiled in 83ms (982 modules)
+ ✓ Compiled in 325ms (982 modules)
+ ✓ Compiled in 124ms (982 modules)
+ ✓ Compiled in 104ms (982 modules)
+ ✓ Compiled in 117ms (982 modules)
+ ✓ Compiled in 127ms (982 modules)
+ ✓ Compiled in 305ms (982 modules)
+ ✓ Compiled in 126ms (984 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/ruichen/Projects/private-coach-schedular/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/ruichen/Projects/private-coach-schedular/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 146ms (984 modules)
+ ✓ Compiled in 101ms (984 modules)
+ ✓ Compiled in 122ms (984 modules)
+ ✓ Compiled in 98ms (984 modules)
+ ✓ Compiled in 197ms (984 modules)
+ ✓ Compiled in 110ms (456 modules)
+ ✓ Compiled in 100ms (456 modules)
+ ✓ Compiled in 58ms (456 modules)
+ ✓ Compiled in 79ms (456 modules)
+ ✓ Compiled in 181ms (984 modules)
+ ✓ Compiled in 151ms (984 modules)
+ ✓ Compiled in 84ms (456 modules)
+ ✓ Compiled in 62ms (456 modules)
+ ✓ Compiled in 128ms (984 modules)
+ ✓ Compiled in 148ms (984 modules)
+ ✓ Compiled in 65ms (456 modules)
+ ✓ Compiled in 61ms (456 modules)
+ ✓ Compiled in 391ms (984 modules)
+ ✓ Compiled in 148ms (984 modules)
+ ✓ Compiled in 188ms (984 modules)
+ ✓ Compiled in 253ms (984 modules)
+ ✓ Compiled in 102ms (456 modules)
+ ✓ Compiled in 247ms (984 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/ruichen/Projects/private-coach-schedular/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/ruichen/Projects/private-coach-schedular/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 175ms (984 modules)
+ ✓ Compiled in 72ms (456 modules)
+ ✓ Compiled in 152ms (984 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/ruichen/Projects/private-coach-schedular/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/ruichen/Projects/private-coach-schedular/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 159ms (984 modules)
+ ✓ Compiled in 70ms (456 modules)
+ ✓ Compiled in 177ms (984 modules)
+ ✓ Compiled in 79ms (456 modules)
+ ✓ Compiled in 60ms (456 modules)
+ ✓ Compiled in 88ms (456 modules)
+ ✓ Compiled in 54ms (456 modules)
+ ✓ Compiled in 66ms (456 modules)
+ ✓ Compiled in 64ms (456 modules)
+ ✓ Compiled in 90ms (456 modules)
+ ✓ Compiled in 53ms (456 modules)

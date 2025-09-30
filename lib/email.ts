@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import { createCalendarEvent, generateICS } from '@/lib/calendar-utils'
 
 // Create transporter with Gmail SMTP
 const transporter = nodemailer.createTransport({
@@ -10,6 +11,7 @@ const transporter = nodemailer.createTransport({
 })
 
 interface RegistrationEmailData {
+  sessionId: number
   playerName: string
   parentName: string
   parentEmail: string
@@ -27,6 +29,7 @@ interface RegistrationEmailData {
 
 export async function sendRegistrationConfirmation(data: RegistrationEmailData) {
   const {
+    sessionId,
     playerName,
     parentName,
     parentEmail,
@@ -51,6 +54,22 @@ export async function sendRegistrationConfirmation(data: RegistrationEmailData) 
       day: "numeric",
     })
   }
+
+  // Generate calendar event
+  const calendarEvent = createCalendarEvent({
+    id: sessionId,
+    sport,
+    ageGroup,
+    date: sessionDate,
+    time: sessionTime,
+    location: sessionLocation,
+    focus,
+    price
+  })
+
+  // Generate ICS file content
+  const icsContent = generateICS(calendarEvent)
+  const icsFilename = `${sport}_training_${ageGroup}_${sessionDate.replace(/[-:]/g, '')}.ics`
 
   const subject = `Registration Confirmed: ${playerName} - ${sport.charAt(0).toUpperCase() + sport.slice(1)} Training Session`
 
@@ -104,6 +123,7 @@ export async function sendRegistrationConfirmation(data: RegistrationEmailData) 
             ${price > 0 ? '<li><strong>Payment:</strong> Session fee will be collected at the training session (cash, Venmo, or Zelle)</li>' : ''}
             <li><strong>What to bring:</strong> Water bottle, comfortable athletic wear, and court shoes</li>
             <li><strong>Contact:</strong> Coach Robe will be available 15 minutes before the session for any questions</li>
+            <li><strong>📅 Calendar:</strong> A calendar event file (${icsFilename}) is attached to this email - simply open it to add the session to your calendar</li>
           </ul>
         </div>
         
@@ -159,6 +179,7 @@ IMPORTANT INFORMATION:
 ${price > 0 ? '- Payment will be collected at the session (cash, Venmo, or Zelle)' : ''}
 - Bring: Water bottle, athletic wear, and court shoes
 - Coach Robe will be available 15 minutes early for questions
+- Calendar: A calendar event file (${icsFilename}) is attached - open it to add the session to your calendar
 
 CANCELLATION POLICY:
 Cancellations must be made at least 24 hours before the training session.
@@ -180,9 +201,16 @@ Podio Sports Training
       subject,
       text: textContent,
       html: htmlContent,
+      attachments: [
+        {
+          filename: icsFilename,
+          content: icsContent,
+          contentType: 'text/calendar; charset=utf-8; method=REQUEST',
+        },
+      ],
     })
 
-    console.log(`Registration confirmation email sent to ${parentEmail}`)
+    console.log(`Registration confirmation email sent to ${parentEmail} with calendar attachment`)
     return { success: true }
   } catch (error) {
     console.error('Failed to send registration confirmation email:', error)
