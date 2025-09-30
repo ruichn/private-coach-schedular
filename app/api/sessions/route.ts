@@ -14,7 +14,12 @@ export async function GET(request: NextRequest) {
     const where = includeHidden ? {} : {
       isVisible: true,
       date: {
-        gte: new Date(new Date().setHours(0, 0, 0, 0) - 24 * 60 * 60 * 1000) // Yesterday or later (delisted at midnight after session day)
+        gte: (() => {
+          const tomorrow = new Date()
+          tomorrow.setDate(tomorrow.getDate() + 1)
+          tomorrow.setHours(0, 0, 0, 0)
+          return tomorrow
+        })() // Tomorrow at 00:00:00 (delisted at midnight after session day)
       }
     }
 

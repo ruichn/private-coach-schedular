@@ -8,51 +8,84 @@
    - Environments: .env
 
  ✓ Starting...
- ✓ Ready in 871ms
- ○ Compiling / ...
- ✓ Compiled / in 1307ms (762 modules)
- HEAD / 200 in 1474ms
- ✓ Compiled in 203ms (341 modules)
- ✓ Compiled in 43ms (341 modules)
- GET / 200 in 45ms
- ✓ Compiled /api/sessions in 293ms (862 modules)
- GET /api/sessions 200 in 3492ms
- ✓ Compiled /admin in 378ms (1058 modules)
- GET /admin 200 in 439ms
- ✓ Compiled /admin/login in 100ms (1071 modules)
- GET /admin/login 200 in 136ms
- GET /admin/login 200 in 14ms
- ✓ Compiled /api/admin/login in 89ms (1073 modules)
-Failed admin login attempt from IP: 127.0.0.1
- POST /api/admin/login 401 in 319ms
-Admin login successful from IP: 127.0.0.1
- POST /api/admin/login 200 in 205ms
- GET /admin 200 in 9ms
- ✓ Compiled /api/locations in 124ms (1075 modules)
- GET /api/sessions?includeHidden=true 200 in 610ms
- GET /api/locations 200 in 818ms
- GET /api/locations 200 in 114ms
- GET /api/sessions?includeHidden=true 200 in 337ms
- ✓ Compiled /admin/participants in 312ms (1098 modules)
- GET /admin/participants 200 in 331ms
- GET /api/sessions?includeHidden=true 200 in 484ms
- GET /api/sessions?includeHidden=true 200 in 378ms
- ✓ Compiled /admin/locations in 149ms (1107 modules)
- GET /admin/locations 200 in 168ms
- GET /api/locations 200 in 342ms
- GET /api/locations 200 in 110ms
- GET /admin 200 in 9ms
- GET /api/locations 200 in 65ms
- GET /api/locations 200 in 114ms
- GET /api/sessions?includeHidden=true 200 in 360ms
- GET /api/sessions?includeHidden=true 200 in 248ms
- ✓ Compiled in 399ms (985 modules)
- GET /admin 200 in 58ms
- GET / 200 in 9ms
- ✓ Compiled /api/sessions in 128ms (638 modules)
- GET /api/sessions 200 in 890ms
- GET /api/sessions 200 in 140ms
- ✓ Compiled in 118ms (460 modules)
- GET / 200 in 61ms
- ✓ Compiled in 82ms (460 modules)
- GET / 200 in 8ms
+ ✓ Ready in 953ms
+ ○ Compiling /admin ...
+ ✓ Compiled /admin in 1565ms (945 modules)
+ GET /admin 200 in 1759ms
+ ✓ Compiled in 172ms (436 modules)
+ ✓ Compiled in 25ms (422 modules)
+ ✓ Compiled /api/locations in 254ms (1047 modules)
+ GET /api/locations 200 in 1066ms
+ GET /api/locations 200 in 52ms
+ GET /api/sessions?includeHidden=true 200 in 1647ms
+ GET /api/sessions?includeHidden=true 200 in 149ms
+ ✓ Compiled /api/sessions/[id] in 301ms (1049 modules)
+PATCH request body: {
+  sport: 'volleyball',
+  ageGroup: 'U14',
+  date: '2025-09-28',
+  time: '1:00 PM - 2:30 PM',
+  location: 'Mercer Island Community Center',
+  address: '8236 SE 24th St, Mercer Island, WA 98040',
+  maxParticipants: 20,
+  price: 50,
+  focus: '',
+  isVisible: false
+}
+Session ID: 19
+PATCH request body: {
+  sport: 'volleyball',
+  ageGroup: 'U14',
+  date: '2025-09-28',
+  time: '1:00 PM - 2:30 PM',
+  location: 'Mercer Island Community Center',
+  address: '8236 SE 24th St, Mercer Island, WA 98040',
+  maxParticipants: 20,
+  price: 50,
+  focus: '',
+  isVisible: false
+}
+Session ID: 19
+Update data: {
+  sport: 'volleyball',
+  ageGroup: 'U14',
+  date: 2025-09-28T00:00:00.000Z,
+  time: '1:00 PM - 2:30 PM',
+  location: 'Mercer Island Community Center',
+  address: '8236 SE 24th St, Mercer Island, WA 98040',
+  maxParticipants: 20,
+  price: 50,
+  focus: '',
+  isVisible: false,
+  currentParticipants: 10
+}
+Update data: {
+  sport: 'volleyball',
+  ageGroup: 'U14',
+  date: 2025-09-28T00:00:00.000Z,
+  time: '1:00 PM - 2:30 PM',
+  location: 'Mercer Island Community Center',
+  address: '8236 SE 24th St, Mercer Island, WA 98040',
+  maxParticipants: 20,
+  price: 50,
+  focus: '',
+  isVisible: false,
+  currentParticipants: 10
+}
+ PATCH /api/sessions/19 200 in 1209ms
+ PATCH /api/sessions/19 200 in 1271ms
+ GET /api/sessions?includeHidden=true 200 in 318ms
+ GET /api/sessions?includeHidden=true 200 in 160ms
+ ✓ Compiled / in 201ms (1062 modules)
+ GET / 200 in 228ms
+ GET /api/sessions 200 in 280ms
+ GET /api/sessions 200 in 163ms
+ GET /admin 200 in 12ms
+ GET /api/locations 200 in 137ms
+ GET /api/locations 200 in 40ms
+ GET /api/sessions?includeHidden=true 200 in 210ms
+ GET /api/sessions?includeHidden=true 200 in 135ms
+ ✓ Compiled in 172ms (442 modules)
+ ✓ Compiled in 65ms (442 modules)
+ ✓ Compiled in 57ms (442 modules)
+ ✓ Compiled in 61ms (442 modules)
