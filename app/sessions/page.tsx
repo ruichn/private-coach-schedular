@@ -108,34 +108,35 @@ export default function SessionsPage() {
               </CardHeader>
 
               <CardContent className="space-y-3">
-                <div className="flex items-center text-sm">
-                  <AddToCalendar
-                    session={{
-                      id: session.id,
-                      sport: session.sport,
-                      ageGroup: session.ageGroup,
-                      date: session.date,
-                      time: session.time,
-                      location: session.location,
-                      focus: session.focus,
-                      price: session.price
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className="h-4 w-4 p-0 mr-2 hover:bg-blue-50 rounded transition-colors cursor-pointer"
-                  >
-                    <CalendarPlus className="h-4 w-4 text-blue-600 hover:text-blue-700" />
-                  </AddToCalendar>
-                  <span>{formatSessionDate(session.date)}</span>
-                </div>
-
-                <div className="flex items-center text-sm">
-                  <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                  <span>{session.time}</span>
-                </div>
+                <AddToCalendar
+                  session={{
+                    id: session.id,
+                    sport: session.sport,
+                    ageGroup: session.ageGroup,
+                    date: session.date,
+                    time: session.time,
+                    location: session.location,
+                    focus: session.focus,
+                    price: session.price
+                  }}
+                  variant="ghost"
+                  size="sm"
+                  className="w-full h-auto items-start justify-start px-0 py-0 text-left transition-colors hover:bg-blue-50"
+                >
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center text-sm">
+                      <CalendarPlus className="h-4 w-4 mr-2 text-blue-600" />
+                      <span>{formatSessionDate(session.date)}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Clock className="h-4 w-4 mr-2" />
+                      <span>{session.time}</span>
+                    </div>
+                  </div>
+                </AddToCalendar>
 
                 <div className="flex items-start text-sm">
-                  <MapPin className="h-4 w-4 mr-2 text-gray-500 mt-0.5" />
+                  <MapPin className="h-5 w-5 mr-2 text-gray-500 mt-0.5" />
                   <div>
                     <div className="font-medium">{session.location}</div>
                     <div className="text-gray-500">{session.address}</div>

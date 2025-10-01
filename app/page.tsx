@@ -130,42 +130,44 @@ export default function Home() {
                       <Badge className="bg-green-100 text-green-800">{session.spotsLeft} spots left</Badge>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center text-sm">
-                        <AddToCalendar
-                          session={{
-                            id: session.id,
-                            sport: session.sport,
-                            ageGroup: session.ageGroup,
-                            date: session.originalDate,
-                            time: session.time,
-                            location: session.location,
-                            focus: session.focus,
-                            price: session.price
-                          }}
-                          variant="ghost"
-                          size="sm"
-                          className="h-4 w-4 p-0 mr-2 hover:bg-blue-50 rounded transition-colors cursor-pointer"
-                        >
-                          <CalendarPlus className="h-4 w-4 text-blue-600 hover:text-blue-700" />
-                        </AddToCalendar>
-                        <span>{session.date}</span>
+                  <CardContent className="space-y-3">
+                    <AddToCalendar
+                      session={{
+                        id: session.id,
+                        sport: session.sport,
+                        ageGroup: session.ageGroup,
+                        date: session.originalDate,
+                        time: session.time,
+                        location: session.location,
+                        focus: session.focus,
+                        price: session.price
+                      }}
+                      variant="ghost"
+                      size="sm"
+                      className="w-full h-auto items-start justify-start px-0 py-0 text-left transition-colors hover:bg-blue-50"
+                    >
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center text-sm">
+                          <CalendarPlus className="h-4 w-4 mr-2 text-blue-600" />
+                          <span>{session.date}</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Clock className="h-4 w-4 mr-2" />
+                          <span>{session.time}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center text-sm">
-                        <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                        <span>{session.time}</span>
-                      </div>
-                      <div className="flex items-center text-sm">
-                        <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                        <span>{session.location}</span>
-                      </div>
-                      <div className="flex items-center text-sm">
-                        <Users className="h-4 w-4 mr-2 text-gray-500" />
-                        <span>
-                          {session.participants}/{session.maxParticipants} players
-                        </span>
-                      </div>
+                    </AddToCalendar>
+
+                    <div className="flex items-start text-sm">
+                      <MapPin className="h-5 w-5 mr-2 text-gray-500 mt-0.5" />
+                      <span>{session.location}</span>
+                    </div>
+
+                    <div className="flex items-center text-sm">
+                      <Users className="h-4 w-4 mr-2 text-gray-500" />
+                      <span>
+                        {session.participants}/{session.maxParticipants} players
+                      </span>
                     </div>
 
                     <div className="w-full bg-gray-200 rounded-full h-2">
@@ -360,4 +362,3 @@ export default function Home() {
     </div>
   )
 }
-
