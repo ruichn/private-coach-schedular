@@ -961,7 +961,7 @@ ${session.price > 0 ? `\n💵 Price: $${session.price}` : ''}
                   }}
                   variant="ghost"
                   size="sm"
-                  className="w-full h-auto items-start justify-start px-0 py-0 text-left transition-colors hover:bg-blue-50"
+                  className="w-full h-auto items-start justify-start px-0 py-0 text-left transition-colors hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 >
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center text-sm">
