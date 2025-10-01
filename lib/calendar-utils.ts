@@ -89,6 +89,9 @@ export function generateICS(event: CalendarEvent): string {
   const fullLocation = event.address ? `${event.location}, ${event.address}` : event.location
   const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(fullLocation)}`
 
+  // Create Apple Maps search URI using the full location
+  const appleGeoUri = `geo:0,0?q=${encodeURIComponent(fullLocation)}`
+
   // Add map link to description with full address
   const descriptionWithMap = `${escape(event.description)}\\n\\nLocation:\\n${escape(fullLocation)}\\n\\nView Map: ${mapsUrl}`
 
@@ -105,6 +108,7 @@ export function generateICS(event: CalendarEvent): string {
     `SUMMARY:${escape(event.title)}`,
     `DESCRIPTION:${descriptionWithMap}`,
     `LOCATION:${escape(event.location)}`,
+    `X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-APPLE-RADIUS=0;X-TITLE="${escape(event.location)}":${appleGeoUri}`,
     'STATUS:CONFIRMED',
     'TRANSP:OPAQUE',
     'END:VEVENT',
