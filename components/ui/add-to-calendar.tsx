@@ -19,6 +19,7 @@ interface AddToCalendarProps {
     date: string
     time: string
     location: string
+    address?: string
     focus?: string
     price?: number
   }
@@ -39,7 +40,7 @@ export function AddToCalendar({
 
   const handleAddToCalendar = (type: 'google' | 'outlook' | 'ics') => {
     const event = createCalendarEvent(session)
-    
+
     switch (type) {
       case 'google':
         window.open(generateGoogleCalendarURL(event), '_blank')
@@ -51,7 +52,7 @@ export function AddToCalendar({
         downloadICS(event)
         break
     }
-    
+
     setIsOpen(false)
   }
 

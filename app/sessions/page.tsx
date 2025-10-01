@@ -116,6 +116,7 @@ export default function SessionsPage() {
                     date: session.date,
                     time: session.time,
                     location: session.location,
+                    address: session.address,
                     focus: session.focus,
                     price: session.price
                   }}
@@ -139,7 +140,14 @@ export default function SessionsPage() {
                   <MapPin className="h-5 w-5 mr-2 text-gray-500 mt-0.5" />
                   <div>
                     <div className="font-medium">{session.location}</div>
-                    <div className="text-gray-500">{session.address}</div>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(session.address)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {session.address}
+                    </a>
                   </div>
                 </div>
 

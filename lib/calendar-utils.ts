@@ -79,27 +79,53 @@ export function generateICS(event: CalendarEvent): string {
     }
     return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
   }
-  
+
   const escape = (text: string): string => {
     return text.replace(/[\\,;]/g, '\\$&').replace(/\n/g, '\\n')
   }
-  
+
+  // Create a Google Maps link for the location
+  const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(event.location)}`
+
+  // Static coordinates for known locations
+  // Podio Sports: 40.5892, -73.9938
+  let latitude = 40.5892
+  let longitude = -73.9938
+
+  // Check if location matches known venues (add more as needed)
+  const locationLower = event.location.toLowerCase()
+  if (locationLower.includes('podio') || locationLower.includes('2301 cropsey')) {
+    latitude = 40.5892
+    longitude = -73.9938
+  }
+
+  // Create Apple Maps geo URI with actual coordinates
+  const appleGeoUri = `geo:${latitude},${longitude}`
+
+  // Add map link to description
+  const descriptionWithMap = `${escape(event.description)}\\n\\nLocation:\\n${escape(event.location)}\\n\\nView Map: ${mapsUrl}`
+
   const ics = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//Coach Robe Training//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
     'BEGIN:VEVENT',
     `UID:${Date.now()}@coach-robe-training.com`,
     `DTSTART:${formatDate(event.startDate)}`,
     `DTEND:${formatDate(event.endDate)}`,
     `SUMMARY:${escape(event.title)}`,
-    `DESCRIPTION:${escape(event.description)}`,
+    `DESCRIPTION:${descriptionWithMap}`,
     `LOCATION:${escape(event.location)}`,
-    ...(event.url ? [`URL:${event.url}`] : []),
+    `GEO:${latitude};${longitude}`,
+    `X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-APPLE-MAPKIT-HANDLE=;X-APPLE-RADIUS=49.91307540029363;X-APPLE-REFERENCEFRAME=1;X-TITLE="${escape(event.location)}":${appleGeoUri}`,
+    'STATUS:CONFIRMED',
+    'TRANSP:OPAQUE',
     'END:VEVENT',
     'END:VCALENDAR'
   ].join('\r\n')
-  
+
   return ics
 }
 
@@ -159,13 +185,14 @@ export function createCalendarEvent(session: {
   date: string
   time: string
   location: string
+  address?: string
   focus?: string
   price?: number
 }): CalendarEvent {
   const { start, end } = parseTimeRange(session.time, session.date)
-  
+
   const title = `${session.sport.charAt(0).toUpperCase() + session.sport.slice(1)} Training - ${session.ageGroup}`
-  
+
   const description = [
     `Coach Robe ${session.sport} training session for ${session.ageGroup} players.`,
     session.focus && `Focus: ${session.focus}`,
@@ -174,14 +201,16 @@ export function createCalendarEvent(session: {
     'Please arrive 10 minutes early for warm-up.',
     'For questions, contact Coach Robe.'
   ].filter(Boolean).join('\n')
-  
+
+  // Use full address if available for better map preview in calendar apps
+  const locationString = session.address ? `${session.location}, ${session.address}` : session.location
+
   return {
     title,
     description,
-    location: session.location,
+    location: locationString,
     startDate: start,
-    endDate: end,
-    url: `${typeof window !== 'undefined' ? window.location.origin : ''}/sessions/${session.id}`
+    endDate: end
   }
 }
 

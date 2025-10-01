@@ -18,6 +18,7 @@ interface Session {
   originalDate: string
   time: string
   location: string
+  address: string
   participants: number
   maxParticipants: number
   spotsLeft: number
@@ -47,6 +48,7 @@ export default function Home() {
           originalDate: session.date, // Keep original date for calendar
           time: session.time,
           location: session.location,
+          address: session.address,
           participants: session.currentParticipants,
           maxParticipants: session.maxParticipants,
           spotsLeft: session.maxParticipants - session.currentParticipants,
@@ -139,6 +141,7 @@ export default function Home() {
                         date: session.originalDate,
                         time: session.time,
                         location: session.location,
+                        address: session.address,
                         focus: session.focus,
                         price: session.price
                       }}
@@ -160,7 +163,14 @@ export default function Home() {
 
                     <div className="flex items-start text-sm">
                       <MapPin className="h-5 w-5 mr-2 text-gray-500 mt-0.5" />
-                      <span>{session.location}</span>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(session.location)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        {session.location}
+                      </a>
                     </div>
 
                     <div className="flex items-center text-sm">
