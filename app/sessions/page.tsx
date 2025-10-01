@@ -109,7 +109,7 @@ export default function SessionsPage() {
 
               <CardContent className="space-y-3">
                 <div className="flex items-center text-sm">
-                  <AddToCalendar 
+                  <AddToCalendar
                     session={{
                       id: session.id,
                       sport: session.sport,
@@ -122,9 +122,9 @@ export default function SessionsPage() {
                     }}
                     variant="ghost"
                     size="sm"
-                    className="h-4 w-4 p-0 mr-2 hover:bg-blue-50 rounded transition-colors cursor-pointer animate-pulse"
+                    className="h-4 w-4 p-0 mr-2 hover:bg-blue-50 rounded transition-colors cursor-pointer"
                   >
-                    <CalendarPlus className="h-4 w-4 text-gray-500 hover:text-blue-600" />
+                    <CalendarPlus className="h-4 w-4 text-blue-600 hover:text-blue-700" />
                   </AddToCalendar>
                   <span>{formatSessionDate(session.date)}</span>
                 </div>
