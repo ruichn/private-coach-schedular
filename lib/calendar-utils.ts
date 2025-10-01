@@ -8,6 +8,7 @@ export interface CalendarEvent {
   title: string
   description: string
   location: string
+  address?: string
   startDate: Date
   endDate: Date
   url?: string
@@ -84,26 +85,12 @@ export function generateICS(event: CalendarEvent): string {
     return text.replace(/[\\,;]/g, '\\$&').replace(/\n/g, '\\n')
   }
 
-  // Create a Google Maps link for the location
-  const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(event.location)}`
+  // Create a Google Maps link using full address if available
+  const fullLocation = event.address ? `${event.location}, ${event.address}` : event.location
+  const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(fullLocation)}`
 
-  // Static coordinates for known locations
-  // Podio Sports: 40.5892, -73.9938
-  let latitude = 40.5892
-  let longitude = -73.9938
-
-  // Check if location matches known venues (add more as needed)
-  const locationLower = event.location.toLowerCase()
-  if (locationLower.includes('podio') || locationLower.includes('2301 cropsey')) {
-    latitude = 40.5892
-    longitude = -73.9938
-  }
-
-  // Create Apple Maps geo URI with actual coordinates
-  const appleGeoUri = `geo:${latitude},${longitude}`
-
-  // Add map link to description
-  const descriptionWithMap = `${escape(event.description)}\\n\\nLocation:\\n${escape(event.location)}\\n\\nView Map: ${mapsUrl}`
+  // Add map link to description with full address
+  const descriptionWithMap = `${escape(event.description)}\\n\\nLocation:\\n${escape(fullLocation)}\\n\\nView Map: ${mapsUrl}`
 
   const ics = [
     'BEGIN:VCALENDAR',
@@ -118,8 +105,6 @@ export function generateICS(event: CalendarEvent): string {
     `SUMMARY:${escape(event.title)}`,
     `DESCRIPTION:${descriptionWithMap}`,
     `LOCATION:${escape(event.location)}`,
-    `GEO:${latitude};${longitude}`,
-    `X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-APPLE-MAPKIT-HANDLE=;X-APPLE-RADIUS=49.91307540029363;X-APPLE-REFERENCEFRAME=1;X-TITLE="${escape(event.location)}":${appleGeoUri}`,
     'STATUS:CONFIRMED',
     'TRANSP:OPAQUE',
     'END:VEVENT',
@@ -202,13 +187,13 @@ export function createCalendarEvent(session: {
     'For questions, contact Coach Robe.'
   ].filter(Boolean).join('\n')
 
-  // Use full address if available for better map preview in calendar apps
-  const locationString = session.address ? `${session.location}, ${session.address}` : session.location
-
+  // Use just the location name for calendar display
+  // Store full address for map URL generation
   return {
     title,
     description,
-    location: locationString,
+    location: session.location,
+    address: session.address,
     startDate: start,
     endDate: end
   }
