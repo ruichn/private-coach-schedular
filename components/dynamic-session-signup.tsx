@@ -76,7 +76,7 @@ export default function DynamicSessionSignup({ initialSession }: DynamicSessionS
 
   const spotsRemaining = session.maxParticipants - session.currentParticipants
 
-  if (spotsRemaining <= 0) {
+  if (spotsRemaining < 0) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-2xl mx-auto">

@@ -103,6 +103,21 @@ export default function AdminPage() {
             isVisible: session.isVisible !== undefined ? session.isVisible : true, // Default to visible for existing sessions
             playerNames: session.registrations.map((reg: any) => reg.playerName),
           }))
+          .sort((a: Session, b: Session) => {
+            // Sort by sport first (volleyball before basketball)
+            const sportOrder = { volleyball: 0, basketball: 1 }
+            const sportCompare = (sportOrder[a.sport.toLowerCase() as keyof typeof sportOrder] ?? 999) -
+                                (sportOrder[b.sport.toLowerCase() as keyof typeof sportOrder] ?? 999)
+            if (sportCompare !== 0) return sportCompare
+
+            // Then by age group
+            if (a.ageGroup !== b.ageGroup) {
+              return a.ageGroup.localeCompare(b.ageGroup)
+            }
+
+            // Finally by date
+            return new Date(a.date).getTime() - new Date(b.date).getTime()
+          })
         setSessions(formattedSessions)
         
         // Automatically archive past sessions
@@ -180,6 +195,21 @@ export default function AdminPage() {
               isVisible: session.isVisible !== undefined ? session.isVisible : true,
               playerNames: session.registrations.map((reg: any) => reg.playerName),
             }))
+            .sort((a: Session, b: Session) => {
+              // Sort by sport first (volleyball before basketball)
+              const sportOrder = { volleyball: 0, basketball: 1 }
+              const sportCompare = (sportOrder[a.sport.toLowerCase() as keyof typeof sportOrder] ?? 999) -
+                                  (sportOrder[b.sport.toLowerCase() as keyof typeof sportOrder] ?? 999)
+              if (sportCompare !== 0) return sportCompare
+
+              // Then by age group
+              if (a.ageGroup !== b.ageGroup) {
+                return a.ageGroup.localeCompare(b.ageGroup)
+              }
+
+              // Finally by date
+              return new Date(a.date).getTime() - new Date(b.date).getTime()
+            })
           setSessions(formattedSessions)
         }
       }
