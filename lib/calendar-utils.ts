@@ -85,18 +85,12 @@ export function generateICS(event: CalendarEvent): string {
     return text.replace(/[\\,;]/g, '\\$&').replace(/\n/g, '\\n')
   }
 
-  // Create a Google Maps link using full address if available
-  const fullLocation = event.address || event.location
-  const mapsUrl = fullLocation ? `https://maps.google.com/?q=${encodeURIComponent(fullLocation)}` : ''
+  const venueName = event.location.split('(')[0].trim()
+  const mapsQuery = venueName || event.location || event.address || ''
+  const appleGeoUri = mapsQuery ? `geo:?q=${encodeURIComponent(mapsQuery)}` : ''
 
-  // Create Apple Maps URI using search query format
-  // This makes the location clickable and searchable in Mac Calendar
-  const appleGeoUri = fullLocation ? `geo:?q=${encodeURIComponent(fullLocation)}` : ''
-
-  // Add map link to description with full address
-  const descriptionWithMap = mapsUrl
-    ? `${escape(event.description)}\\n\\nLocation:\\n${escape(fullLocation)}\\n\\nView Map: ${mapsUrl}`
-    : `${escape(event.description)}\\n\\nLocation:\\n${escape(fullLocation)}`
+  const displayLocation = event.location || event.address || ''
+  const descriptionWithMap = `${escape(event.description)}\\n\\nLocation:\\n${escape(displayLocation)}`
 
   const ics = [
     'BEGIN:VCALENDAR',
@@ -110,8 +104,8 @@ export function generateICS(event: CalendarEvent): string {
     `DTEND:${formatDate(event.endDate)}`,
     `SUMMARY:${escape(event.title)}`,
     `DESCRIPTION:${descriptionWithMap}`,
-    fullLocation && `LOCATION:${escape(event.location)}`,
-    appleGeoUri && `X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-APPLE-RADIUS=0;X-TITLE="${escape(fullLocation)}":${appleGeoUri}`,
+    displayLocation && `LOCATION:${escape(event.location)}`,
+    appleGeoUri && `X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-APPLE-RADIUS=0;X-TITLE="${escape(venueName || displayLocation)}":${appleGeoUri}`,
     'STATUS:CONFIRMED',
     'TRANSP:OPAQUE',
     'END:VEVENT',
@@ -189,7 +183,7 @@ export function createCalendarEvent(session: {
     ? `${session.location} (${session.address})`
     : session.address || session.location || ''
 
-  const mapQuery = session.address || session.location || ''
+  const mapQuery = session.location || session.address || ''
   const mapLink = mapQuery ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}` : ''
 
   const description = [
