@@ -253,8 +253,7 @@ export default function AdminPage() {
 📌 Location: ${session.location} - ${session.address}
 👥 Registered Players (${session.playerNames.length}/${session.maxParticipants}):
 ${session.playerNames.length > 0 ? session.playerNames.map((name, index) => `${index + 1}. ${name}`).join('\n') : 'No players registered yet'}
-${session.price > 0 ? `\n💵 Price: $${session.price}` : ''}
-🔗 Register at: ${window.location.origin}/sessions/${session.id}/signup`
+${session.price > 0 ? `\n💵 Price: $${session.price}` : ''}`
 
     if (navigator.share) {
       navigator.share({
