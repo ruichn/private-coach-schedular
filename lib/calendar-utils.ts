@@ -85,9 +85,10 @@ export function generateICS(event: CalendarEvent): string {
     return text.replace(/[\\,;]/g, '\\$&').replace(/\n/g, '\\n')
   }
 
-  const venueName = event.location.split('(')[0].trim()
-  const mapsQuery = venueName || event.location || event.address || ''
+  const displayLocation = event.location || event.address || ''
+  const mapsQuery = event.address || displayLocation
   const appleGeoUri = mapsQuery ? `geo:?q=${encodeURIComponent(mapsQuery)}` : ''
+  const venueTitle = displayLocation.split(',')[0].trim()
 
   const descriptionWithMap = escape(event.description)
 
@@ -103,8 +104,8 @@ export function generateICS(event: CalendarEvent): string {
     `DTEND:${formatDate(event.endDate)}`,
     `SUMMARY:${escape(event.title)}`,
     `DESCRIPTION:${descriptionWithMap}`,
-    event.location && `LOCATION:${escape(event.location)}`,
-    appleGeoUri && `X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-APPLE-RADIUS=0;X-TITLE="${escape(venueName || event.location)}":${appleGeoUri}`,
+    displayLocation && `LOCATION:${escape(displayLocation)}`,
+    appleGeoUri && `X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-APPLE-RADIUS=0;X-TITLE="${escape(venueTitle)}":${appleGeoUri}`,
     'STATUS:CONFIRMED',
     'TRANSP:OPAQUE',
     'END:VEVENT',
@@ -178,12 +179,10 @@ export function createCalendarEvent(session: {
 
   const title = `${session.sport.charAt(0).toUpperCase() + session.sport.slice(1)} Training - ${session.ageGroup}`
 
-  const locationField = session.location && session.address
-    ? `${session.location} (${session.address})`
-    : session.address || session.location || ''
-
-  const mapQuery = session.location || session.address || ''
-  const mapLink = mapQuery ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}` : ''
+  const venueName = session.location?.trim() || ''
+  const address = session.address?.trim() || ''
+  const locationField = [venueName, address].filter(Boolean).join(', ') || venueName
+  const mapQuery = address || venueName
 
   const description = [
     `Coach Robe ${session.sport} training session for ${session.ageGroup} players.`,
@@ -200,7 +199,7 @@ export function createCalendarEvent(session: {
     title,
     description,
     location: locationField,
-    address: session.address,
+    address: address,
     startDate: start,
     endDate: end
   }
