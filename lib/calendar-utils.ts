@@ -89,8 +89,7 @@ export function generateICS(event: CalendarEvent): string {
   const mapsQuery = venueName || event.location || event.address || ''
   const appleGeoUri = mapsQuery ? `geo:?q=${encodeURIComponent(mapsQuery)}` : ''
 
-  const displayLocation = event.location || event.address || ''
-  const descriptionWithMap = `${escape(event.description)}\\n\\nLocation:\\n${escape(displayLocation)}`
+  const descriptionWithMap = escape(event.description)
 
   const ics = [
     'BEGIN:VCALENDAR',
@@ -104,8 +103,8 @@ export function generateICS(event: CalendarEvent): string {
     `DTEND:${formatDate(event.endDate)}`,
     `SUMMARY:${escape(event.title)}`,
     `DESCRIPTION:${descriptionWithMap}`,
-    displayLocation && `LOCATION:${escape(event.location)}`,
-    appleGeoUri && `X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-APPLE-RADIUS=0;X-TITLE="${escape(venueName || displayLocation)}":${appleGeoUri}`,
+    event.location && `LOCATION:${escape(event.location)}`,
+    appleGeoUri && `X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-APPLE-RADIUS=0;X-TITLE="${escape(venueName || event.location)}":${appleGeoUri}`,
     'STATUS:CONFIRMED',
     'TRANSP:OPAQUE',
     'END:VEVENT',
