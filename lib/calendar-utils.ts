@@ -193,9 +193,6 @@ export function createCalendarEvent(session: {
   const mapLink = mapQuery ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}` : ''
 
   const description = [
-    session.location && session.address && session.location !== session.address && `Venue: ${session.location}`,
-    session.address && `Address: ${session.address}`,
-    mapLink && `Google Maps: ${mapLink}`,
     `Coach Robe ${session.sport} training session for ${session.ageGroup} players.`,
     session.focus && `Focus: ${session.focus}`,
     session.price && session.price > 0 && `Price: $${session.price}`,
