@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { isAdminAuthenticated, useAdminAuth } from "@/lib/auth"
 import Link from "next/link"
@@ -435,10 +435,10 @@ ${session.price > 0 ? `\n💵 Price: $${session.price}` : ''}`
   const editSession = (session: Session) => {
     setEditingSession(session)
     setShowCreateForm(true)
-    
+
     // Parse the time string to get start and end times
     const [startTime, endTime] = session.time.split(' - ')
-    
+
     setFormData({
       sport: session.sport || "volleyball", // Default to volleyball for existing sessions
       ageGroup: session.ageGroup,
@@ -453,6 +453,9 @@ ${session.price > 0 ? `\n💵 Price: $${session.price}` : ''}`
       notes: "",
       isVisible: session.isVisible,
     })
+
+    // Scroll to top of page to show edit form
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const convertTo24Hour = (time12h: string) => {
@@ -494,6 +497,34 @@ ${session.price > 0 ? `\n💵 Price: $${session.price}` : ''}`
     }
   }
 
+  // Group sessions by sport and age group
+  const groupedSessions = useMemo(() => {
+    const groups: Record<string, Record<string, Session[]>> = {}
+
+    sessions.forEach((session) => {
+      const sportKey = session.sport || "other"
+      const ageKey = session.ageGroup || "other"
+
+      if (!groups[sportKey]) {
+        groups[sportKey] = {}
+      }
+
+      if (!groups[sportKey][ageKey]) {
+        groups[sportKey][ageKey] = []
+      }
+
+      groups[sportKey][ageKey].push(session)
+    })
+
+    // Sort sessions within each age group by date
+    Object.values(groups).forEach((ageGroups) => {
+      Object.values(ageGroups).forEach((list) => {
+        list.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      })
+    })
+
+    return groups
+  }, [sessions])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -503,9 +534,9 @@ ${session.price > 0 ? `\n💵 Price: $${session.price}` : ''}`
             Coach Robe Sports Training
           </Link>
           <nav className="hidden md:flex items-center gap-6">
-            <span className="text-sm font-medium text-blue-600 font-semibold">
+            <Link href="/admin" className="text-sm font-medium text-blue-600 font-semibold">
               Sessions
-            </span>
+            </Link>
             <Link href="/admin/participants" className="text-sm font-medium hover:text-gray-600 transition-colors">
               Participants
             </Link>
@@ -914,9 +945,41 @@ ${session.price > 0 ? `\n💵 Price: $${session.price}` : ''}`
           <div className="text-center py-8">
             <p className="text-gray-500">Loading sessions...</p>
           </div>
+        ) : sessions.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600 mb-4">No sessions available. Create your first session above!</p>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sessions.map((session) => (
+          <div className="space-y-10">
+            {Object.entries(groupedSessions).sort(([a], [b]) => {
+              const sportPriority = ['volleyball', 'basketball']
+              const aIndex = sportPriority.indexOf(a.toLowerCase())
+              const bIndex = sportPriority.indexOf(b.toLowerCase())
+              const aRank = aIndex === -1 ? sportPriority.length : aIndex
+              const bRank = bIndex === -1 ? sportPriority.length : bIndex
+              return aRank - bRank
+            }).map(([sport, ageGroups]) => (
+              <section key={sport}>
+                <header className="mb-6">
+                  <h2 className="text-2xl font-semibold">
+                    {sport.charAt(0).toUpperCase() + sport.slice(1)} Sessions
+                  </h2>
+                </header>
+
+                <div className="space-y-8">
+                  {Object.entries(ageGroups)
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .map(([ageGroup, groupSessions]) => (
+                      <div key={`${sport}-${ageGroup}`}>
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-xl font-medium">{ageGroup}</h3>
+                          <span className="text-sm text-gray-500">
+                            {groupSessions.length} session{groupSessions.length === 1 ? '' : 's'}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {groupSessions.map((session) => (
             <Card key={session.id} className="overflow-hidden">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
@@ -1054,6 +1117,12 @@ ${session.price > 0 ? `\n💵 Price: $${session.price}` : ''}`
 
               </CardContent>
             </Card>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </section>
             ))}
           </div>
         )}

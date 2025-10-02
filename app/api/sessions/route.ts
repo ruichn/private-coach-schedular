@@ -15,11 +15,17 @@ export async function GET(request: NextRequest) {
       isVisible: true,
       date: {
         gte: (() => {
-          const tomorrow = new Date()
-          tomorrow.setDate(tomorrow.getDate() + 1)
-          tomorrow.setHours(0, 0, 0, 0)
+          // Get tomorrow's date in Pacific Time (Seattle, WA) and convert to UTC midnight
+          const now = new Date()
+          const pacificTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }))
+          const year = pacificTime.getFullYear()
+          const month = pacificTime.getMonth()
+          const day = pacificTime.getDate()
+
+          // Create tomorrow at midnight UTC (matching how session dates are stored)
+          const tomorrow = new Date(Date.UTC(year, month, day + 1, 0, 0, 0, 0))
           return tomorrow
-        })() // Tomorrow at 00:00:00 (delisted at midnight after session day)
+        })() // Tomorrow at 00:00:00 UTC (delisted at midnight after session day in Pacific Time)
       }
     }
 

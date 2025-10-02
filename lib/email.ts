@@ -544,14 +544,282 @@ export async function sendSessionUpdateToAllPlayers(
     }
 
     console.log(`Session update emails completed: ${emailsSent} sent, ${emailsFailed} failed`)
-    return { 
-      success: true, 
-      emailsSent, 
+    return {
+      success: true,
+      emailsSent,
       emailsFailed,
-      changes 
+      changes
     }
   } catch (error) {
     console.error('Failed to send session update emails:', error)
+    return { success: false, error }
+  }
+}
+
+interface SessionReminderEmailData {
+  playerName: string
+  parentName: string
+  parentEmail: string
+  sessionDate: string
+  sessionTime: string
+  sessionLocation: string
+  sessionAddress: string
+  ageGroup: string
+  sport: string
+  focus: string
+  price: number
+}
+
+export async function sendSessionReminder(data: SessionReminderEmailData) {
+  const {
+    playerName,
+    parentName,
+    parentEmail,
+    sessionDate,
+    sessionTime,
+    sessionLocation,
+    sessionAddress,
+    ageGroup,
+    sport,
+    focus,
+    price,
+  } = data
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'America/Los_Angeles',
+    })
+  }
+
+  const subject = `Reminder: ${sport.charAt(0).toUpperCase() + sport.slice(1)} Training Session Tomorrow - ${playerName}`
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+          line-height: 1.6;
+          color: #1f2937;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+        .header {
+          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+          color: white;
+          padding: 30px 20px;
+          border-radius: 8px 8px 0 0;
+          text-align: center;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 24px;
+        }
+        .content {
+          background: white;
+          padding: 30px;
+          border: 1px solid #e5e7eb;
+          border-top: none;
+        }
+        .session-details {
+          background: #f9fafb;
+          border-left: 4px solid #3b82f6;
+          padding: 20px;
+          margin: 20px 0;
+          border-radius: 4px;
+        }
+        .session-details h2 {
+          margin-top: 0;
+          color: #1f2937;
+          font-size: 18px;
+        }
+        .detail-row {
+          display: flex;
+          padding: 8px 0;
+          border-bottom: 1px solid #e5e7eb;
+        }
+        .detail-row:last-child {
+          border-bottom: none;
+        }
+        .detail-label {
+          font-weight: 600;
+          min-width: 120px;
+          color: #4b5563;
+        }
+        .detail-value {
+          color: #1f2937;
+        }
+        .reminder-box {
+          background: #fef3c7;
+          border: 2px solid #fbbf24;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .reminder-box h3 {
+          margin-top: 0;
+          color: #92400e;
+        }
+        .reminder-box ul {
+          margin: 10px 0;
+          padding-left: 20px;
+        }
+        .reminder-box li {
+          margin: 8px 0;
+          color: #78350f;
+        }
+        .footer {
+          background: #f9fafb;
+          padding: 20px;
+          text-align: center;
+          font-size: 14px;
+          color: #6b7280;
+          border-radius: 0 0 8px 8px;
+          border: 1px solid #e5e7eb;
+          border-top: none;
+        }
+        .footer a {
+          color: #3b82f6;
+          text-decoration: none;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>⏰ Session Reminder - Tomorrow!</h1>
+      </div>
+
+      <div class="content">
+        <p>Hi ${parentName},</p>
+
+        <p>This is a friendly reminder that <strong>${playerName}</strong> has a ${sport} training session <strong>tomorrow</strong>!</p>
+
+        <div class="session-details">
+          <h2>📋 Session Details</h2>
+          <div class="detail-row">
+            <span class="detail-label">Player:</span>
+            <span class="detail-value">${playerName}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Session:</span>
+            <span class="detail-value">${sport.charAt(0).toUpperCase() + sport.slice(1)} - ${ageGroup}</span>
+          </div>
+          ${focus ? `
+          <div class="detail-row">
+            <span class="detail-label">Focus:</span>
+            <span class="detail-value">${focus}</span>
+          </div>
+          ` : ''}
+          <div class="detail-row">
+            <span class="detail-label">Date:</span>
+            <span class="detail-value">${formatDate(sessionDate)}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Time:</span>
+            <span class="detail-value">${sessionTime}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Location:</span>
+            <span class="detail-value">${sessionLocation}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Address:</span>
+            <span class="detail-value">${sessionAddress}</span>
+          </div>
+          ${price > 0 ? `
+          <div class="detail-row">
+            <span class="detail-label">Session Fee:</span>
+            <span class="detail-value">$${price}</span>
+          </div>
+          ` : ''}
+        </div>
+
+        <div class="reminder-box">
+          <h3>📝 Important Reminders</h3>
+          <ul>
+            <li><strong>Arrive 10-15 minutes early</strong> - This gives time for check-in and warm-up</li>
+            ${price > 0 ? '<li><strong>Payment</strong> - Bring cash, or have Venmo/Zelle ready</li>' : ''}
+            <li><strong>What to bring:</strong>
+              <ul>
+                <li>Water bottle</li>
+                <li>Athletic wear appropriate for ${sport}</li>
+                <li>Court shoes (no outdoor shoes on the court)</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <p>We're looking forward to an excellent training session with ${playerName}!</p>
+
+        <p>If you have any questions or need to reach us, please contact <a href="mailto:Robe@PodioSports.org">Robe@PodioSports.org</a>.</p>
+
+        <p>Best regards,<br>
+        <strong>Coach Robe</strong><br>
+        Podio Sports Training</p>
+      </div>
+
+      <div class="footer">
+        <p>This is an automated reminder for your upcoming ${sport} training session.</p>
+        <p>Podio Sports | <a href="mailto:Robe@PodioSports.org">Robe@PodioSports.org</a></p>
+      </div>
+    </body>
+    </html>
+  `
+
+  const textContent = `
+⏰ SESSION REMINDER - TOMORROW!
+
+Hi ${parentName},
+
+This is a friendly reminder that ${playerName} has a ${sport} training session TOMORROW!
+
+SESSION DETAILS:
+Player: ${playerName}
+Session: ${sport.charAt(0).toUpperCase() + sport.slice(1)} - ${ageGroup}
+${focus ? `Focus: ${focus}` : ''}
+Date: ${formatDate(sessionDate)}
+Time: ${sessionTime}
+Location: ${sessionLocation}
+Address: ${sessionAddress}
+${price > 0 ? `Session Fee: $${price}` : ''}
+
+IMPORTANT REMINDERS:
+- Arrive 10-15 minutes early for check-in and warm-up
+${price > 0 ? '- Payment: Bring cash, or have Venmo/Zelle ready' : ''}
+- What to bring:
+  * Water bottle
+  * Athletic wear appropriate for ${sport}
+  * Court shoes (no outdoor shoes on the court)
+
+We're looking forward to an excellent training session with ${playerName}!
+
+If you have any questions, contact us at Robe@PodioSports.org
+
+Best regards,
+Coach Robe
+Podio Sports Training
+  `
+
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: parentEmail,
+      subject,
+      text: textContent,
+      html: htmlContent,
+    })
+
+    console.log(`Session reminder sent to ${parentEmail}`)
+    return { success: true }
+  } catch (error) {
+    console.error('Failed to send session reminder:', error)
     return { success: false, error }
   }
 }
