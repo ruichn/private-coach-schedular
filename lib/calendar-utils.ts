@@ -86,15 +86,17 @@ export function generateICS(event: CalendarEvent): string {
   }
 
   // Create a Google Maps link using full address if available
-  const fullLocation = event.address ? `${event.location}, ${event.address}` : event.location
-  const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(fullLocation)}`
+  const fullLocation = event.address || event.location
+  const mapsUrl = fullLocation ? `https://maps.google.com/?q=${encodeURIComponent(fullLocation)}` : ''
 
   // Create Apple Maps URI using search query format
   // This makes the location clickable and searchable in Mac Calendar
-  const appleGeoUri = `geo:?q=${encodeURIComponent(fullLocation)}`
+  const appleGeoUri = fullLocation ? `geo:?q=${encodeURIComponent(fullLocation)}` : ''
 
   // Add map link to description with full address
-  const descriptionWithMap = `${escape(event.description)}\\n\\nLocation:\\n${escape(fullLocation)}\\n\\nView Map: ${mapsUrl}`
+  const descriptionWithMap = mapsUrl
+    ? `${escape(event.description)}\\n\\nLocation:\\n${escape(fullLocation)}\\n\\nView Map: ${mapsUrl}`
+    : `${escape(event.description)}\\n\\nLocation:\\n${escape(fullLocation)}`
 
   const ics = [
     'BEGIN:VCALENDAR',
@@ -108,13 +110,13 @@ export function generateICS(event: CalendarEvent): string {
     `DTEND:${formatDate(event.endDate)}`,
     `SUMMARY:${escape(event.title)}`,
     `DESCRIPTION:${descriptionWithMap}`,
-    `LOCATION:${escape(event.location)}`,
-    `X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-APPLE-RADIUS=0;X-TITLE="${escape(event.location)}":${appleGeoUri}`,
+    fullLocation && `LOCATION:${escape(event.location)}`,
+    appleGeoUri && `X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-APPLE-RADIUS=0;X-TITLE="${escape(fullLocation)}":${appleGeoUri}`,
     'STATUS:CONFIRMED',
     'TRANSP:OPAQUE',
     'END:VEVENT',
     'END:VCALENDAR'
-  ].join('\r\n')
+  ].filter(Boolean).join('\r\n')
 
   return ics
 }
@@ -183,7 +185,14 @@ export function createCalendarEvent(session: {
 
   const title = `${session.sport.charAt(0).toUpperCase() + session.sport.slice(1)} Training - ${session.ageGroup}`
 
+  const locationField = session.address || session.location || ''
+  const mapQuery = session.address || session.location || ''
+  const mapLink = mapQuery ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}` : ''
+
   const description = [
+    session.location && session.address && session.location !== session.address && `Venue: ${session.location}`,
+    session.address && `Address: ${session.address}`,
+    mapLink && `Google Maps: ${mapLink}`,
     `Coach Robe ${session.sport} training session for ${session.ageGroup} players.`,
     session.focus && `Focus: ${session.focus}`,
     session.price && session.price > 0 && `Price: $${session.price}`,
@@ -197,7 +206,7 @@ export function createCalendarEvent(session: {
   return {
     title,
     description,
-    location: session.location,
+    location: locationField,
     address: session.address,
     startDate: start,
     endDate: end
