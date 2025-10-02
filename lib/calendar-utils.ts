@@ -89,8 +89,9 @@ export function generateICS(event: CalendarEvent): string {
   const fullLocation = event.address ? `${event.location}, ${event.address}` : event.location
   const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(fullLocation)}`
 
-  // Create Apple Maps search URI using the full location
-  const appleGeoUri = `geo:0,0?q=${encodeURIComponent(fullLocation)}`
+  // Create Apple Maps URI using search query format
+  // This makes the location clickable and searchable in Mac Calendar
+  const appleGeoUri = `geo:?q=${encodeURIComponent(fullLocation)}`
 
   // Add map link to description with full address
   const descriptionWithMap = `${escape(event.description)}\\n\\nLocation:\\n${escape(fullLocation)}\\n\\nView Map: ${mapsUrl}`
