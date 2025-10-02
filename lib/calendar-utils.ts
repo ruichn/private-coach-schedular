@@ -185,7 +185,10 @@ export function createCalendarEvent(session: {
 
   const title = `${session.sport.charAt(0).toUpperCase() + session.sport.slice(1)} Training - ${session.ageGroup}`
 
-  const locationField = session.address || session.location || ''
+  const locationField = session.location && session.address
+    ? `${session.location} (${session.address})`
+    : session.address || session.location || ''
+
   const mapQuery = session.address || session.location || ''
   const mapLink = mapQuery ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}` : ''
 
