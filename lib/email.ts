@@ -87,7 +87,9 @@ export async function sendRegistrationConfirmation(data: RegistrationEmailData) 
 
   // Generate ICS file content
   const icsContent = generateICS(calendarEvent)
-  const icsFilename = `${sport}_training_${ageGroup}_${sessionDate.replace(/[-:]/g, '')}.ics`
+  // Extract date in YYYYMMDD format from ISO string or date string
+  const datePart = sessionDate.includes('T') ? sessionDate.split('T')[0] : sessionDate
+  const icsFilename = `${sport}_${ageGroup}_${datePart.replace(/[-]/g, '')}.ics`
 
   const subject = `Registration Confirmed: ${playerName} - ${sport.charAt(0).toUpperCase() + sport.slice(1)} Training Session`
 
@@ -279,7 +281,9 @@ export async function sendSessionUpdateNotification(data: SessionUpdateEmailData
 
   // Generate ICS file content
   const icsContent = generateICS(calendarEvent)
-  const icsFilename = `${sport}_training_${ageGroup}_${sessionDate.replace(/[-:]/g, '')}_updated.ics`
+  // Extract date in YYYYMMDD format from ISO string or date string
+  const datePart = sessionDate.includes('T') ? sessionDate.split('T')[0] : sessionDate
+  const icsFilename = `${sport}_${ageGroup}_${datePart.replace(/[-]/g, '')}.ics`
 
   const subject = `Session Update: ${playerName} - ${sport.charAt(0).toUpperCase() + sport.slice(1)} Training Session`
 

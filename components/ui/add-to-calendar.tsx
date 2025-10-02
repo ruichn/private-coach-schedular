@@ -49,7 +49,10 @@ export function AddToCalendar({
         window.open(generateOutlookCalendarURL(event), '_blank')
         break
       case 'ics':
-        downloadICS(event)
+        // Extract date in YYYYMMDD format from ISO string or date string
+        const datePart = session.date.includes('T') ? session.date.split('T')[0] : session.date
+        const filename = `${session.sport}_${session.ageGroup}_${datePart.replace(/[-]/g, '')}.ics`
+        downloadICS(event, filename)
         break
     }
 
