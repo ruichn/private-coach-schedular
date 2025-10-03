@@ -64,8 +64,16 @@ export async function sendRegistrationConfirmation(data: RegistrationEmailData) 
   } = data
 
   const formatDate = (dateString: string) => {
+    // Session dates are stored as UTC midnight but represent Pacific Time dates
+    // Extract the date parts directly without timezone conversion
     const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", {
+    const year = date.getUTCFullYear()
+    const month = date.getUTCMonth()
+    const day = date.getUTCDate()
+
+    // Create a new date using the UTC values as local date
+    const localDate = new Date(year, month, day)
+    return localDate.toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -258,8 +266,16 @@ export async function sendSessionUpdateNotification(data: SessionUpdateEmailData
   } = data
 
   const formatDate = (dateString: string) => {
+    // Session dates are stored as UTC midnight but represent Pacific Time dates
+    // Extract the date parts directly without timezone conversion
     const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", {
+    const year = date.getUTCFullYear()
+    const month = date.getUTCMonth()
+    const day = date.getUTCDate()
+
+    // Create a new date using the UTC values as local date
+    const localDate = new Date(year, month, day)
+    return localDate.toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -586,13 +602,20 @@ export async function sendSessionReminder(data: SessionReminderEmailData) {
   } = data
 
   const formatDate = (dateString: string) => {
+    // Session dates are stored as UTC midnight but represent Pacific Time dates
+    // Extract the date parts directly without timezone conversion
     const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
+    const year = date.getUTCFullYear()
+    const month = date.getUTCMonth()
+    const day = date.getUTCDate()
+
+    // Create a new date using the UTC values as local date
+    const localDate = new Date(year, month, day)
+    return localDate.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      timeZone: 'America/Los_Angeles',
     })
   }
 
